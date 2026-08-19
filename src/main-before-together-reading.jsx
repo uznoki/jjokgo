@@ -68,300 +68,46 @@ return <>
 }
 
 function Room({r,setV}){
-  const [page,setPage]=useState(17);
-  const pageRef=useRef(17);
-  const [micOn,setMicOn]=useState(false);
-  const [participants,setParticipants]=useState([]);
-  const [remoteStreams,setRemoteStreams]=useState([]);
-  const peerIdRef=useRef((crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)+"-"+Date.now()));
-  const channelRef=useRef(null);
-  const streamRef=useRef(null);
-  const peersRef=useRef({});
+  const [recording,setRecording]=useState(false);
+  const mediaRecorderRef=useRef(null);
+  const chunksRef=useRef([]);
+  const [audioUrl,setAudioUrl]=useState("");
 
-  const totalPages=27;
+async function startRecording(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    const recorder=new MediaRecorder(stream);
 
-  function addParticipant(id){
-    setParticipants(prev=>prev.includes(id)?prev:[...prev,id]);
-  }
+    chunksRef.current=[];
 
-  function removeParticipant(id){
-    setParticipants(prev=>prev.filter(x=>x!==id));
-  }
-
-  async function createPeer(remoteId,createOffer){
-    if(peersRef.current[remoteId]) return peersRef.current[remoteId];
-
-    const pc=new RTCPeerConnection({
-      iceServers:[
-        {urls:"stun:stun.l.google.com:19302"}
-      ]
-    });
-
-    peersRef.current[remoteId]=pc;
-
-    if(streamRef.current){
-      streamRef.current.getTracks().forEach(track=>{
-        pc.addTrack(track,streamRef.current);
-      });
-    }
-
-    pc.onicecandidate=e=>{
-      if(e.candidate && channelRef.current){
-        channelRef.current.send({
-          type:"broadcast",
-          event:"ice",
-          payload:{
-            from:peerIdRef.current,
-            to:remoteId,
-            candidate:e.candidate
-          }
-        });
-      }
+    recorder.ondataavailable=(e)=>{
+      if(e.data.size>0) chunksRef.current.push(e.data);
     };
 
-    pc.ontrack=e=>{
-      const stream=e.streams[0];
-      if(!stream) return;
-
-      setRemoteStreams(prev=>{
-        const exists=prev.find(x=>x.id===remoteId);
-        if(exists){
-          return prev.map(x=>x.id===remoteId?{...x,stream}:x);
-        }
-        return [...prev,{id:remoteId,stream}];
-      });
+    recorder.onstop=()=>{
+      const blob=new Blob(chunksRef.current,{type:recorder.mimeType});
+      const url=URL.createObjectURL(blob);
+      setAudioUrl(url);
+      stream.getTracks().forEach(track=>track.stop());
     };
 
-    pc.onconnectionstatechange=()=>{
-      if(["failed","disconnected","closed"].includes(pc.connectionState)){
-        setRemoteStreams(prev=>prev.filter(x=>x.id!==remoteId));
-        removeParticipant(remoteId);
-      }
-    };
+    mediaRecorderRef.current=recorder;
+    recorder.start();
+    setRecording(true);
 
-    if(createOffer){
-      const offer=await pc.createOffer();
-      await pc.setLocalDescription(offer);
-
-      channelRef.current?.send({
-        type:"broadcast",
-        event:"offer",
-        payload:{
-          from:peerIdRef.current,
-          to:remoteId,
-          offer
-        }
-      });
-    }
-
-    return pc;
+  }catch(err){
+    alert("마이크 사용 권한이 필요해요.");
   }
-
-  async function handleOffer(payload){
-    if(payload.to!==peerIdRef.current) return;
-
-    const pc=await createPeer(payload.from,false);
-
-    await pc.setRemoteDescription(
-      new RTCSessionDescription(payload.offer)
-    );
-
-    const answer=await pc.createAnswer();
-    await pc.setLocalDescription(answer);
-
-    channelRef.current?.send({
-      type:"broadcast",
-      event:"answer",
-      payload:{
-        from:peerIdRef.current,
-        to:payload.from,
-        answer
-      }
-    });
+}
+function stopRecording(){
+  if(mediaRecorderRef.current && recording){
+    mediaRecorderRef.current.stop();
+    setRecording(false);
   }
-
-  async function handleAnswer(payload){
-    if(payload.to!==peerIdRef.current) return;
-
-    const pc=peersRef.current[payload.from];
-    if(!pc) return;
-
-    await pc.setRemoteDescription(
-      new RTCSessionDescription(payload.answer)
-    );
-  }
-
-  async function handleIce(payload){
-    if(payload.to!==peerIdRef.current) return;
-
-    const pc=peersRef.current[payload.from];
-    if(!pc) return;
-
-    try{
-      await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
-    }catch(err){
-      console.error("ICE error",err);
-    }
-  }
-
-  useEffect(()=>{
-    const channel=supabase.channel(`live-room-${r.id}`,{
-      config:{broadcast:{self:false}}
-    });
-
-    channelRef.current=channel;
-
-    channel
-      .on("broadcast",{event:"hello"},async({payload})=>{
-        if(payload.from===peerIdRef.current) return;
-
-        addParticipant(payload.from);
-
-        channelRef.current?.send({
-          type:"broadcast",
-          event:"page",
-          payload:{
-            from:peerIdRef.current,
-            to:payload.from,
-            page:pageRef.current
-          }
-        });
-
-        /*
-          peer ID가 작은 쪽이 offer를 시작합니다.
-          동시에 offer를 만드는 충돌(glare)을 피하기 위한 규칙입니다.
-        */
-        const shouldOffer=
-          peerIdRef.current < payload.from;
-
-        await createPeer(payload.from,shouldOffer);
-      })
-      .on("broadcast",{event:"page"},({payload})=>{
-        if(payload.from===peerIdRef.current) return;
-        if(payload.to && payload.to!==peerIdRef.current) return;
-
-        const next=Number(payload.page);
-
-        if(Number.isFinite(next)){
-          pageRef.current=next;
-          setPage(next);
-        }
-      })
-      .on("broadcast",{event:"offer"},({payload})=>{
-        handleOffer(payload);
-      })
-      .on("broadcast",{event:"answer"},({payload})=>{
-        handleAnswer(payload);
-      })
-      .on("broadcast",{event:"ice"},({payload})=>{
-        handleIce(payload);
-      })
-      .on("broadcast",{event:"leave"},({payload})=>{
-        if(payload.from===peerIdRef.current) return;
-
-        const pc=peersRef.current[payload.from];
-        if(pc) pc.close();
-
-        delete peersRef.current[payload.from];
-
-        removeParticipant(payload.from);
-        setRemoteStreams(prev=>prev.filter(x=>x.id!==payload.from));
-      })
-      .subscribe(async(status)=>{
-        if(status==="SUBSCRIBED"){
-          addParticipant(peerIdRef.current);
-
-          await channel.send({
-            type:"broadcast",
-            event:"hello",
-            payload:{from:peerIdRef.current}
-          });
-        }
-      });
-
-    return ()=>{
-      channel.send({
-        type:"broadcast",
-        event:"leave",
-        payload:{from:peerIdRef.current}
-      });
-
-      Object.values(peersRef.current).forEach(pc=>pc.close());
-      peersRef.current={};
-
-      if(streamRef.current){
-        streamRef.current.getTracks().forEach(track=>track.stop());
-        streamRef.current=null;
-      }
-
-      supabase.removeChannel(channel);
-      channelRef.current=null;
-    };
-  },[r.id]);
-
-  async function toggleMic(){
-    try{
-      if(!streamRef.current){
-        const stream=await navigator.mediaDevices.getUserMedia({
-          audio:{
-            echoCancellation:true,
-            noiseSuppression:true,
-            autoGainControl:true
-          }
-        });
-
-        streamRef.current=stream;
-
-        Object.entries(peersRef.current).forEach(([remoteId,pc])=>{
-          stream.getTracks().forEach(track=>{
-            pc.addTrack(track,stream);
-          });
-        });
-
-        setMicOn(true);
-        return;
-      }
-
-      const tracks=streamRef.current.getAudioTracks();
-      const next=!micOn;
-
-      tracks.forEach(track=>{
-        track.enabled=next;
-      });
-
-      setMicOn(next);
-    }catch(err){
-      console.error(err);
-      alert("마이크 사용 권한이 필요해요.");
-    }
-  }
-
-  function changePage(next){
-    const safePage=Math.max(1,Math.min(totalPages,next));
-    pageRef.current=safePage;
-    setPage(safePage);
-
-    channelRef.current?.send({
-      type:"broadcast",
-      event:"page",
-      payload:{
-        from:peerIdRef.current,
-        page:safePage
-      }
-    });
-  }
-
-  function previousPage(){
-    changePage(pageRef.current-1);
-  }
-
-  function nextPage(){
-    changePage(pageRef.current+1);
-  }
-
+}
   return <>
     <button className="back" onClick={()=>setV("rooms")}>
-      ‹ 읽기방으로
+      ‹ 돌아가기
     </button>
 
     <section className="room">
@@ -369,82 +115,31 @@ function Room({r,setV}){
 
       <div>
         <h2>{r.name} {r.is_private ? "🔒" : ""}</h2>
-        <b>{r.books?.title || "책 정보"}</b>
-        <p>🎙 LIVE 함께 읽기 · {participants.length}명</p>
+        <b>{r.books?.title || "책 정보 불러오는 중"}</b>
+        <p>내가 만든 읽기방</p>
       </div>
     </section>
 
     <div className="demoNotice">
-      📖 지금 함께 읽는 페이지 · {page}쪽
+      📚 함께 읽을 책: {r.books?.title || "책 정보 확인 중"}
     </div>
 
-    <section className="readingPage">
-      <div className="readingBookTitle">
-        {r.books?.title || "함께 읽는 책"}
-      </div>
-
-      <div className="pageNumber">{page}</div>
-
-      <div className="readingText">
-        <p>이곳에서 모두가 같은 책을 보며 함께 읽어요.</p>
-        <small>
-          실제 책 콘텐츠는 적법하게 제공되는 방식으로 연결합니다.
-        </small>
-      </div>
-
-      <div className="pageCounter">
-        {page} / {totalPages}쪽
-      </div>
-    </section>
-
-    <h3>지금 함께 읽는 사람</h3>
-
-    <div className="readers">
-      {participants.map((id,i)=>
-        <div className="reader active" key={id}>
-          <span className="readerDot">●</span>
-          <b>{i===0 ? "나" : `참여자 ${i}`}</b>
-          {i===0 && micOn && <small>🎙 LIVE</small>}
-        </div>
-      )}
-    </div>
-
-    <div className="readingActions">
-      <button className="secondary" onClick={previousPage}>
-        ← 이전 쪽
-      </button>
-
-      <button
-        className="wide"
-        onClick={toggleMic}
-      >
-        {micOn ? "🔴 LIVE 음성 끄기" : "🎙 LIVE 함께 읽기"}
-      </button>
-
-      <button className="secondary" onClick={nextPage}>
-        다음 쪽 →
-      </button>
-    </div>
-
+    <h3>읽기 진행</h3>
     <div className="demoNotice">
-      {micOn
-        ? "🔴 지금 내 목소리가 함께 읽는 사람들에게 전달되고 있어요."
-        : "🎧 LIVE 함께 읽기를 누르면 같은 방의 사람들과 목소리를 나눌 수 있어요."
-      }
+      아직 낭독 기록이 없어요. 첫 낭독을 시작해보세요.
     </div>
 
-    {remoteStreams.map(item=>
-      <audio
-        key={item.id}
-        autoPlay
-        playsInline
-        ref={el=>{
-          if(el && el.srcObject!==item.stream){
-            el.srcObject=item.stream;
-          }
-        }}
-      />
+    <button className="wide" onClick={recording ? stopRecording : startRecording}>
+      {recording ? "⏹ 녹음 종료" : "🎙 내 낭독 시작하기"}
+    </button>
+
+    {audioUrl && !recording && (
+      <div className="demoNotice">
+        <p>🎧 방금 녹음한 낭독</p>
+        <audio controls src={audioUrl} />
+      </div>
     )}
+
   </>
 }function Calendar(){return <div className="cal">{["월","화","수","목","금","토","일"].map(x=><b key={x}>{x}</b>)}{[11,12,13,14,15,16,17].map((x,i)=><span key={x} className={i==1?"done":i==4?"doing":""}>{x}</span>)}</div>}function My({session,setV}){const nickname=session.user.user_metadata?.nickname||session.user.email?.split("@")[0]||"쪽GO 사용자";async function logout(){await supabase.auth.signOut();setV("home")}return <><section className="profileHero"><div className="avatar"><UserRound/></div><div><small>MY 쪽GO</small><h1>{nickname}님</h1><p>{session.user.email}</p></div></section><button className="logout" onClick={logout}><LogOut/> 로그아웃</button><h3>이번 달 나의 읽기</h3><div className="stats"><div>시작 전<b>2권</b></div><div>읽는 중<b>3권</b></div><div>읽기 완료<b>1권</b></div></div><h3>나의 읽기 달력</h3><Calendar/><div className="due"><CalendarDays/><span><b>9월 12일까지</b><br/>17~19쪽 읽어주세요.</span></div><h3>참여 중인 방</h3><Card r={rooms[0]}/><div className="demoNotice">현재 읽기방/달력은 데모 데이터예요. 다음 버전에서 실제 계정별 데이터로 연결합니다.</div></>}
 createRoot(document.getElementById("root")).render(<App/>);

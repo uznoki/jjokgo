@@ -69,7 +69,6 @@ return <>
 
 function Room({r,setV}){
   const [page,setPage]=useState(17);
-  const pageRef=useRef(17);
   const [micOn,setMicOn]=useState(false);
   const [participants,setParticipants]=useState([]);
   const [remoteStreams,setRemoteStreams]=useState([]);
@@ -217,16 +216,6 @@ function Room({r,setV}){
 
         addParticipant(payload.from);
 
-        channelRef.current?.send({
-          type:"broadcast",
-          event:"page",
-          payload:{
-            from:peerIdRef.current,
-            to:payload.from,
-            page:pageRef.current
-          }
-        });
-
         /*
           peer ID가 작은 쪽이 offer를 시작합니다.
           동시에 offer를 만드는 충돌(glare)을 피하기 위한 규칙입니다.
@@ -235,17 +224,6 @@ function Room({r,setV}){
           peerIdRef.current < payload.from;
 
         await createPeer(payload.from,shouldOffer);
-      })
-      .on("broadcast",{event:"page"},({payload})=>{
-        if(payload.from===peerIdRef.current) return;
-        if(payload.to && payload.to!==peerIdRef.current) return;
-
-        const next=Number(payload.page);
-
-        if(Number.isFinite(next)){
-          pageRef.current=next;
-          setPage(next);
-        }
       })
       .on("broadcast",{event:"offer"},({payload})=>{
         handleOffer(payload);
@@ -336,27 +314,12 @@ function Room({r,setV}){
     }
   }
 
-  function changePage(next){
-    const safePage=Math.max(1,Math.min(totalPages,next));
-    pageRef.current=safePage;
-    setPage(safePage);
-
-    channelRef.current?.send({
-      type:"broadcast",
-      event:"page",
-      payload:{
-        from:peerIdRef.current,
-        page:safePage
-      }
-    });
-  }
-
   function previousPage(){
-    changePage(pageRef.current-1);
+    setPage(p=>Math.max(1,p-1));
   }
 
   function nextPage(){
-    changePage(pageRef.current+1);
+    setPage(p=>Math.min(totalPages,p+1));
   }
 
   return <>
