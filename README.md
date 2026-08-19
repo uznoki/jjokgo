@@ -16,6 +16,25 @@
 - 늦은 입장과 마이크 후활성화를 위한 WebRTC 재협상
 - 같은 방 참여자 간 현재 페이지 동기화
 - 모바일 Safari/Chrome 오디오 재생 정책 대응
+- 읽기방별 고유 초대 코드와 참여자 멤버십
+- 참여 중인 방/내가 만든 방 분리
+
+## 데이터베이스 마이그레이션
+
+초대 코드와 멤버십 기능을 사용하려면 아래 SQL 마이그레이션을 Supabase에 먼저 적용해야 합니다.
+
+```text
+supabase/migrations/20260820030000_room_invites_v1.sql
+```
+
+Supabase Dashboard의 SQL Editor에 파일 내용을 붙여 넣고 실행하거나, Supabase CLI가 연결된 환경에서 migration을 적용하세요. 마이그레이션은 다음을 생성합니다.
+
+- `reading_rooms.invite_code`
+- `reading_room_members` 테이블
+- 기존 방 소유자의 owner 멤버십
+- 신규 방 owner 멤버십 자동 생성 trigger
+- 초대 코드 입장용 `join_reading_room_by_code` RPC
+- 읽기방과 멤버십 조회 RLS 정책
 
 ## LIVE 음성 네트워크
 
