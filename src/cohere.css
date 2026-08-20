@@ -1,0 +1,173 @@
+/* 쪽GO Cohere-inspired v1
+   흰 편집형 캔버스, 거대한 제목, 어두운 제품 패널과 얇은 규칙으로
+   신뢰감 있는 LIVE 독서 경험을 만든다. */
+
+:root{
+  --co-ink:#17171c;
+  --co-text:#212121;
+  --co-body:#616161;
+  --co-muted:#858590;
+  --co-canvas:#fff;
+  --co-stone:#eeece7;
+  --co-pale-green:#edfce9;
+  --co-pale-blue:#f1f5ff;
+  --co-line:#d9d9dd;
+  --co-green:#003c33;
+  --co-navy:#071829;
+  --co-blue:#1863dc;
+  --co-coral:#ff7759;
+  --co-focus:#4c6ee6;
+  --g:var(--co-green);
+  --iv:var(--co-canvas);
+  --canvas:var(--co-canvas);
+  --paper:var(--co-canvas);
+  --ink:var(--co-ink);
+  --muted:var(--co-muted);
+  --line:var(--co-line);
+}
+
+body{background:var(--co-stone);color:var(--co-text)}
+.app{background:var(--co-canvas)}
+main{max-width:1180px;padding-left:56px;padding-right:56px}
+button:focus-visible,input:focus-visible{outline:3px solid rgba(76,110,230,.24);outline-offset:3px}
+
+/* Editorial shell */
+header{height:80px;border-bottom:1px solid #f0f0f2}
+.brand{color:var(--co-ink);font-size:29px;font-weight:700;letter-spacing:-.06em}
+.brand span,.authBrand span{color:var(--co-green)}
+header>button.headAccount{min-height:38px;padding:5px 13px;border:1px solid var(--co-ink);border-radius:30px;background:transparent;color:var(--co-ink);font-size:13px;font-weight:500}
+header>button.headAccount:hover{transform:none;border-color:var(--co-ink);background:var(--co-ink);color:white}
+h1,h2,h3,.auth h1{font-weight:400;letter-spacing:-.055em}
+h3{margin-top:64px;padding-top:20px;border-top:1px solid var(--co-line);font-size:25px}
+.back{font-weight:500;text-decoration:underline;text-underline-offset:4px}
+
+/* One monumental claim plus one honest product surface. */
+.hero{min-height:540px;height:auto;padding:76px 0;gap:64px;align-items:center}
+.hero>div:first-child{flex:1 1 56%}
+.hero h1{margin:20px 0 28px;color:var(--co-ink);font-size:clamp(66px,8vw,94px);font-weight:400;line-height:.92;letter-spacing:-.078em}
+.hero p{margin:0;max-width:540px;color:var(--co-body);font-size:18px;line-height:1.55}
+.heroEyebrow{padding:0;background:transparent;color:var(--co-coral);border-radius:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:500;letter-spacing:.08em}
+.heroArt{flex:0 0 min(38vw,430px);width:min(38vw,430px);height:330px;padding:24px;border-radius:22px;background:var(--co-green);box-shadow:none;transform:none;color:white;display:flex;flex-direction:column;justify-content:space-between;font-size:initial!important}
+.heroArt small{position:static;right:auto;bottom:auto;padding:0;border:0;background:transparent;color:inherit;font-size:inherit;font-weight:400;letter-spacing:inherit}
+.consoleHeader,.consoleFooter{display:flex;align-items:center;justify-content:space-between;color:#b9ccc7;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;letter-spacing:.06em}
+.consoleHeader span{display:flex;align-items:center;gap:8px}
+.consoleHeader i{width:7px;height:7px;border-radius:50%;background:var(--co-coral);box-shadow:0 0 0 4px rgba(255,119,89,.14)}
+.consoleHeader small{padding:5px 9px;border:1px solid rgba(255,255,255,.22);border-radius:30px;color:white;font-size:9px}
+.consoleCore{display:flex;align-items:center;gap:18px;padding:22px;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(0,0,0,.16)}
+.consoleMic{width:58px;height:58px;display:grid;place-items:center;border-radius:50%;background:var(--co-coral);color:var(--co-ink)}
+.consoleMic svg{width:27px;height:27px}
+.consoleCore>div{display:flex;flex-direction:column;gap:5px}
+.consoleCore b{font-size:20px;font-weight:400}
+.consoleCore small{color:#b9ccc7;font-size:12px}
+
+/* High-priority action is black; companion actions are quiet. */
+.welcome{min-height:68px;border:0;border-radius:8px;background:var(--co-pale-green);box-shadow:none}
+.welcome:hover{transform:none;box-shadow:none;background:#e6f5e2}
+.homeActions{grid-template-columns:1.2fr 1fr;gap:12px}
+.homeActions button{box-shadow:none!important;transform:none!important}
+.primaryAction{min-height:150px;border-radius:22px;background:var(--co-ink);box-shadow:none}
+.primaryAction .actionIcon{border-radius:50%;background:var(--co-coral);color:var(--co-ink)}
+.secondaryAction{min-height:88px;border:1px solid var(--co-line);border-radius:8px;background:white;box-shadow:none}
+.secondaryAction>svg:first-child{color:var(--co-green)}
+.codeAction{min-height:50px;border:0;border-radius:0;background:transparent;color:var(--co-blue);justify-content:flex-start;text-decoration:underline;text-underline-offset:5px}
+
+/* Content is mostly rows and rules, not decorative card chrome. */
+.books{gap:12px}
+.books>div{min-height:230px;padding:24px;border:0;border-radius:8px;background:var(--co-stone);box-shadow:none}
+.books>div:nth-child(2){background:var(--co-pale-green)}
+.books>div:nth-child(3){background:var(--co-pale-blue)}
+.books .cover{height:130px;border-radius:4px;background:white}
+.books strong{color:var(--co-text);font-weight:500}
+.bar{height:3px;background:rgba(23,23,28,.12)}
+.bar i{background:var(--co-green)}
+.card{min-height:96px;margin:0;border:0;border-top:1px solid var(--co-line);border-radius:0;background:white;box-shadow:none}
+.card:last-of-type{border-bottom:1px solid var(--co-line)}
+.card:hover{transform:none;border-color:var(--co-line);box-shadow:none;background:#fafafa}
+.cal{border:0;border-radius:8px;background:var(--co-stone)}
+.cal .done{background:var(--co-green);box-shadow:none}
+.cal .doing{background:var(--co-coral)}
+
+/* Forms */
+.auth{max-width:540px}
+.authBrand{color:var(--co-ink);font-weight:700}
+.auth h1{margin-top:30px;font-size:clamp(44px,7vw,60px);line-height:1}
+.authTabs,.roomTabs{padding:3px;border:1px solid var(--co-line);border-radius:30px;background:white}
+.authTabs button,.roomTabs button{border-radius:30px;font-weight:500}
+.authTabs .active,.roomTabs button.active{background:var(--co-ink);color:white;box-shadow:none}
+.auth label input,.auth .createRoomForm input,.bookPicker input,.bookEditor input{border:1px solid var(--co-line);border-radius:8px;background:white}
+.auth label input:focus,.auth .createRoomForm input:focus,.bookPicker input:focus,.bookEditor input:focus{border-color:#9b60aa;box-shadow:none}
+.wide{border-radius:32px;background:var(--co-ink);box-shadow:none}
+.wide:hover{transform:none;filter:brightness(1.12)}
+.wide:active{transform:scale(.99);box-shadow:none}
+.authMsg,.roomMessage{border:0;border-radius:8px;background:var(--co-pale-green);color:var(--co-green)}
+.guestBadge{background:transparent;color:var(--co-coral);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em}
+
+/* Reading-room index */
+.joinRoomForm{min-height:62px;border:1px solid var(--co-line);border-radius:8px;background:white;box-shadow:none}
+.joinRoomForm button{border-radius:30px;background:var(--co-ink);box-shadow:none}
+.roomListCard{margin:0;border:0;border-top:1px solid var(--co-line);border-radius:0;background:white;box-shadow:none}
+.roomListCard:last-of-type{border-bottom:1px solid var(--co-line)}
+.roomListCard:hover{transform:none;border-color:var(--co-line);box-shadow:none;background:#fafafa}
+.roomCardOpen{min-height:106px;padding-left:0}
+.roomCardOpen .thumb{border-radius:8px;background:var(--co-stone)}
+.roomOwnerActions{background:white}
+.inviteCode,.editBookButton{border-color:var(--co-line);background:white}
+.emptyRooms{border:0;border-radius:8px;background:var(--co-stone)}
+.bookPicker{border:0;border-radius:16px;background:var(--co-stone)}
+.bookEditor{border:0;border-radius:16px;background:var(--co-pale-green)}
+.bookSearch,.bookResults{border-color:var(--co-line);border-radius:8px;background:white}
+.bookSearch button,.manualBookSelect{border-radius:30px;background:var(--co-ink)}
+.manualBookToggle{border:1px solid var(--co-green);border-radius:30px;background:transparent;color:var(--co-green)}
+.selectedBook{border:0;border-radius:8px;background:var(--co-pale-green)}
+
+/* LIVE room: deep-green product field, white reading canvas. */
+.liveRoomView{max-width:940px}
+.liveRoomView .room{margin-top:20px;padding:28px;border-radius:22px;background:var(--co-green);color:white}
+.liveRoomView .room h2,.liveRoomView .room b{color:white}
+.liveRoomView .room p{color:#b9ccc7}
+.liveRoomView .room .thumb.big{background:rgba(255,255,255,.1);box-shadow:none}
+.liveConnection{border:0;border-radius:8px;background:var(--co-pale-green)}
+.liveConnection.connecting{background:#fff5e4}
+.liveConnection.error,.liveConnection.closed{background:#fff0ec}
+.liveRoomView>.demoNotice{border-radius:4px;background:var(--co-stone)}
+.readingPage{border:1px solid var(--co-line);border-radius:4px 22px 22px 4px;background:white;box-shadow:none}
+.pageNumber{color:var(--co-ink);font-weight:400}
+.reader{border:1px solid var(--co-line);border-radius:32px;background:white;box-shadow:none}
+.reader.live{border-color:var(--co-green);background:var(--co-pale-green);box-shadow:none}
+.reader.muted{background:var(--co-stone)}
+.readingActions .secondary{border:0;border-radius:4px;background:transparent;color:var(--co-blue);text-decoration:underline;text-underline-offset:4px}
+.readingActions .wide{border-radius:32px}
+.liveButton.live{background:var(--co-coral);color:var(--co-ink)}
+.liveButton.muted{background:var(--co-green)}
+.liveHelp{border:0;border-radius:8px;background:var(--co-stone)}
+
+nav{border-color:var(--co-line);background:rgba(255,255,255,.96)}
+nav button{border-radius:30px}
+nav button.active{background:var(--co-stone);color:var(--co-ink)}
+nav .mic{border-color:white;border-radius:50%;background:var(--co-ink);box-shadow:none;transform:none}
+nav .mic svg,nav .mic small{transform:none}
+nav .mic:active{transform:scale(.98);box-shadow:none}
+nav .mic.active{background:var(--co-coral);color:var(--co-ink)!important}
+
+@media (max-width:699px){
+  main{padding-left:20px;padding-right:20px}
+  header{height:72px}
+  .hero{min-height:auto;padding:54px 0 50px;display:grid;grid-template-columns:1fr;gap:34px}
+  .hero h1{font-size:clamp(55px,16vw,72px);line-height:.93}
+  .hero p{font-size:16px}
+  .heroArt{display:flex;width:100%;height:250px;flex:auto;border-radius:18px}
+  .consoleCore{padding:18px}
+  .homeActions{grid-template-columns:1fr}
+  .primaryAction{min-height:128px}
+  .secondaryAction{min-height:78px}
+  .books>div{min-height:210px}
+  .books .cover{height:110px}
+  .liveRoomView .room{padding:20px;border-radius:16px}
+}
+
+@media (max-width:380px){
+  .hero h1{font-size:52px}
+  .heroArt{height:230px}
+  .consoleCore{padding:14px}
+  .consoleMic{width:50px;height:50px}
+}
