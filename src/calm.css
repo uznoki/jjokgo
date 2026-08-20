@@ -1,0 +1,198 @@
+/* 쪽GO calm companion UI v1
+   기존 기능 위에 일관된 행동·상태·집중 규칙을 적용한다. */
+
+:root{
+  --green-900:#21483b;
+  --green-800:#2b5b4b;
+  --green-700:#356b58;
+  --green-100:#e7f0e8;
+  --green-050:#f2f7f1;
+  --ink:#242522;
+  --muted:#6f726c;
+  --paper:#fffdf8;
+  --canvas:#faf7f0;
+  --line:#ded7ca;
+  --danger:#b94f3d;
+  --shadow-sm:0 3px 0 rgba(33,72,59,.12);
+  --shadow-md:0 8px 0 rgba(33,72,59,.13);
+  --shadow-soft:0 18px 48px rgba(51,64,55,.08);
+  --radius-md:18px;
+  --g:var(--green-800);
+  --iv:var(--canvas);
+}
+
+body{color:var(--ink);background:#eee9df}
+button,input{font:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible{outline:3px solid rgba(53,107,88,.25);outline-offset:3px}
+button:disabled{cursor:not-allowed}
+.app{background:var(--canvas)}
+main{max-width:1080px;margin:0 auto;padding-left:24px;padding-right:24px}
+
+header{height:88px}
+.brand{border:0;background:transparent;padding:8px 0;color:var(--green-800);font-size:31px;font-weight:900;letter-spacing:-.06em}
+.brand span,.authBrand span{color:var(--green-700)}
+header>button.headAccount{min-height:44px;padding:9px 15px;border:1.5px solid var(--line);background:rgba(255,253,248,.8);box-shadow:none;transition:transform .16s,border-color .16s,background .16s}
+header>button.headAccount:hover{transform:translateY(-1px);border-color:#b9c9ba;background:var(--paper)}
+
+h1,h2,h3,b{letter-spacing:-.025em}
+h1{font-size:clamp(30px,5vw,42px);line-height:1.2}
+h3{margin:42px 0 16px;font-size:21px}
+.back{min-height:42px;color:#50534e;font-weight:700;border-radius:10px;transition:background .15s}
+.back:hover{background:#f0ece4}
+
+/* Home: 한 화면에서 하나의 행동이 가장 먼저 보이도록 한다. */
+.hero{min-height:330px;height:auto;padding:44px 2px 38px}
+.hero h1{margin:10px 0 18px;color:var(--green-900);font-size:clamp(48px,7vw,68px);line-height:1.06;letter-spacing:-.065em}
+.hero p{margin:0;color:var(--muted);font-size:17px;line-height:1.75}
+.heroEyebrow{display:inline-flex;padding:7px 11px;border-radius:999px;background:var(--green-100);color:var(--green-800);font-size:12px;font-weight:800;letter-spacing:.01em}
+.heroArt{position:relative!important;width:174px;height:174px;display:grid;place-items:center;border-radius:52px;background:linear-gradient(145deg,#eaf1e5,#d9e7d7);box-shadow:var(--shadow-soft);transform:rotate(3deg);font-size:68px!important}
+.heroArt span{transform:rotate(-3deg)}
+.heroArt small{position:absolute;right:-9px;bottom:15px;padding:7px 11px;border:4px solid var(--canvas);border-radius:999px;background:#d84f3f;color:white;font-size:11px;font-weight:900;letter-spacing:.08em}
+.welcome{min-height:72px;margin:0 0 18px;padding:15px 18px;border:1.5px solid #cad9ca;border-radius:var(--radius-md);background:var(--green-050);transition:transform .16s,box-shadow .16s}
+.welcome:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm)}
+.welcome>svg:first-child{width:24px;height:24px}
+.welcome span{gap:5px;text-align:left}
+.welcome small{line-height:1.45}
+
+.homeActions{display:grid;grid-template-columns:1.35fr 1fr;gap:14px}
+.homeActions button{border-radius:var(--radius-md);text-align:left;transition:transform .14s,box-shadow .14s,filter .14s}
+.homeActions button:hover{transform:translateY(-2px)}
+.homeActions button:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(33,72,59,.13)}
+.primaryAction{grid-row:span 2;min-height:164px;padding:22px;border:0;background:var(--green-800);color:white;box-shadow:var(--shadow-md);display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:17px}
+.primaryAction .actionIcon{width:54px;height:54px;display:grid;place-items:center;border-radius:17px;background:rgba(255,255,255,.14)}
+.primaryAction .actionIcon svg{width:27px;height:27px}
+.primaryAction>span:nth-child(2){display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+.primaryAction small{color:#dce9df;font-style:normal;font-weight:700}
+.primaryAction b{font-size:23px}
+.primaryAction em{color:#dce9df;font-size:12px;font-style:normal}
+.secondaryAction{min-height:96px;padding:17px;border:1.5px solid var(--line);background:var(--paper);display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;box-shadow:var(--shadow-sm)}
+.secondaryAction>svg:first-child{width:24px;color:var(--green-700)}
+.secondaryAction>span{display:flex;flex-direction:column;gap:4px}
+.secondaryAction small{color:var(--muted)}
+.codeAction{min-height:54px;padding:12px 16px;border:1.5px solid #c9d6c9;background:var(--green-050);color:var(--green-800);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800}
+.codeAction svg{width:18px}
+
+.books{gap:12px;scrollbar-width:none}
+.books::-webkit-scrollbar{display:none}
+.books>div{padding:11px;border:1.5px solid var(--line);border-radius:var(--radius-md);background:var(--paper);box-shadow:0 2px 0 rgba(71,61,43,.04)}
+.cover{background:linear-gradient(145deg,#e5eee0,#d7e5d5);border-radius:13px}
+.bar{height:7px;background:#e4e2db}
+.card{min-height:92px;padding:14px;border:1.5px solid var(--line);border-radius:var(--radius-md);background:var(--paper);transition:transform .15s,border-color .15s,box-shadow .15s}
+.card:hover{transform:translateY(-2px);border-color:#bfd0c0;box-shadow:var(--shadow-sm)}
+.cal{padding:18px;border:1.5px solid var(--line);border-radius:var(--radius-md);background:var(--paper)}
+.cal .done{box-shadow:0 3px 0 #183d31}
+
+/* Auth와 방 만들기: 입력과 완료 행동의 규칙을 통일한다. */
+.auth{max-width:500px;padding-top:8px}
+.authBrand{font-size:30px;letter-spacing:-.055em}
+.auth h1{margin-top:22px;font-size:38px}
+.authTabs{padding:5px;border-radius:15px;background:#ebe7de}
+.authTabs button{min-height:46px;border-radius:11px}
+.authTabs .active{box-shadow:0 3px 0 rgba(33,72,59,.1)}
+.auth label{font-size:14px}
+.auth label input,.auth .createRoomForm input,.bookPicker input,.bookEditor input{min-height:54px;border:1.5px solid var(--line);border-radius:14px;background:var(--paper);transition:border-color .15s,box-shadow .15s}
+.wide{min-height:55px;margin:13px 0;border-radius:15px;background:var(--green-800);box-shadow:0 5px 0 #1d4638;transition:transform .14s,box-shadow .14s,filter .14s}
+.wide:hover{filter:brightness(1.04);transform:translateY(-1px)}
+.wide:active{transform:translateY(4px);box-shadow:0 1px 0 #1d4638}
+.wide:disabled{box-shadow:none;transform:none}
+.authMsg,.roomMessage{border:1px solid #ceddce;background:var(--green-050);color:var(--green-800)}
+.guestBadge{background:var(--green-100)}
+.guestJoin .wide{min-height:58px}
+
+/* Rooms: 컨테이너 장식을 줄이고 방 입장을 선명하게 한다. */
+.joinRoomForm{min-height:68px;padding:8px 9px 8px 16px;border:1.5px solid var(--line);border-radius:var(--radius-md);background:var(--paper);box-shadow:0 3px 0 rgba(71,61,43,.05)}
+.joinRoomForm button{min-height:46px;padding:11px 17px;border-radius:13px;background:var(--green-800);box-shadow:0 3px 0 #1d4638}
+.roomTabs{padding:5px;border-radius:15px}
+.roomTabs button{min-height:48px;border-radius:11px}
+.roomTabs button.active{box-shadow:0 3px 0 rgba(33,72,59,.1)}
+.roomListCard{border:1.5px solid var(--line);border-radius:var(--radius-md);background:var(--paper);transition:border-color .15s,transform .15s,box-shadow .15s}
+.roomListCard:hover{border-color:#bfd0c0;transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+.roomCardOpen{min-height:96px;padding:14px 16px}
+.roomCardOpen .thumb{width:58px;height:72px;border-radius:12px}
+.roomOwnerActions{background:#f5f1e9}
+.inviteCode,.editBookButton{background:transparent}
+.emptyRooms{min-height:240px;border:1.5px dashed #cfc6b7;border-radius:var(--radius-md);background:rgba(255,253,248,.45)}
+.bookPicker,.bookEditor{border:1.5px solid var(--line);border-radius:var(--radius-md);background:var(--paper)}
+
+/* LIVE: 연결 상태, 페이지, 마이크만 시각적 우선순위를 가진다. */
+.liveRoomView{max-width:860px;margin:0 auto}
+.liveRoomView>.back{margin-bottom:6px}
+.liveRoomView .room{margin:18px auto 24px;gap:20px}
+.liveRoomView .room h2{font-size:clamp(25px,4vw,36px)}
+.liveRoomView .room .thumb.big{width:86px;height:108px;border-radius:20px;background:linear-gradient(145deg,#e6eee1,#d7e5d5);box-shadow:none}
+.liveConnection{max-width:none;margin-bottom:16px;padding:16px 18px;border:1.5px solid #c8d9ca;border-radius:var(--radius-md);background:var(--green-050)}
+.liveConnectionDot{width:10px;height:10px;box-shadow:0 0 0 6px rgba(49,95,80,.1)}
+.liveConnection b{font-size:16px}
+.liveRoomView>.demoNotice{max-width:none;margin:0 0 16px;padding:13px 17px;border-radius:14px;background:#f1eee7;font-weight:700}
+.readingPage{max-width:none;min-height:400px;margin:0 auto 28px;padding-top:48px;border:1.5px solid #e4ddd1;border-radius:10px 22px 22px 10px;box-shadow:0 16px 42px rgba(67,56,39,.075),inset 8px 0 18px rgba(77,63,42,.025)}
+.readingBookTitle{margin-bottom:26px}
+.pageNumber{margin-bottom:24px;font-size:58px;color:var(--green-800)}
+.readers{max-width:none;justify-content:flex-start;margin-bottom:24px}
+.reader{min-height:48px;padding:10px 14px;border:1.5px solid #e0dbd1;box-shadow:none}
+.reader.live{box-shadow:0 3px 0 rgba(49,95,80,.12)}
+.readingActions{max-width:none;grid-template-columns:1fr minmax(250px,1.5fr) 1fr;gap:10px}
+.readingActions .secondary{min-height:55px;border:1.5px solid var(--line);background:var(--paper);font-weight:700}
+.readingActions .wide{min-height:56px;margin:0}
+.liveHelp{max-width:none;margin-top:12px;border:1px solid transparent}
+.liveHelp.live{border-color:#cbdccb}
+.audioUnlock{max-width:none}
+
+/* Bottom navigation: 현재 위치가 항상 보이게 한다. */
+nav{height:calc(82px + env(safe-area-inset-bottom));padding:6px max(12px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(12px,env(safe-area-inset-left));border-top:1px solid #ddd7cc;background:rgba(255,253,248,.96);backdrop-filter:blur(16px);z-index:20}
+nav button{min-width:60px;min-height:58px;border-radius:14px;color:#777b75;gap:5px;font-weight:700;transition:color .15s,background .15s,transform .15s}
+nav button.active{color:var(--green-800);background:var(--green-050)}
+nav button:active{transform:scale(.96)}
+nav button:disabled{opacity:.34}
+nav button small{font-size:10px}
+nav .mic{width:64px;height:64px;min-width:64px;margin-top:-30px;border:5px solid var(--paper);border-radius:22px;background:var(--green-800);box-shadow:0 6px 0 #1d4638,0 10px 24px rgba(33,72,59,.18);color:white!important;transform:rotate(45deg)}
+nav .mic svg,nav .mic small{transform:rotate(-45deg)}
+nav .mic small{font-size:8px;letter-spacing:.08em}
+nav .mic:active{transform:rotate(45deg) translate(3px,3px);box-shadow:0 2px 0 #1d4638}
+nav .mic.active{background:#c84f3e}
+
+@media (max-width:699px){
+  main{padding-left:18px;padding-right:18px}
+  header{height:74px}
+  .brand{font-size:28px}
+  .hero{min-height:280px;padding:30px 0 32px}
+  .hero h1{font-size:clamp(44px,13vw,58px)}
+  .hero p br{display:none}
+  .heroArt{width:112px;height:112px;border-radius:34px;font-size:46px!important}
+  .heroArt small{right:-5px;bottom:7px;border-width:3px;font-size:8px}
+  .homeActions{grid-template-columns:1fr}
+  .primaryAction{grid-row:auto;min-height:132px}
+  .secondaryAction{min-height:82px}
+  .codeAction{min-height:55px}
+  .books>div{min-width:min(43vw,170px)}
+  .liveRoomView .room{align-items:flex-start}
+  .liveRoomView .room .thumb.big{width:68px;height:88px;flex:0 0 68px}
+  .liveRoomView .room h2{margin-bottom:7px}
+  .liveRoomView .room b{font-size:15px}
+  .readingPage{min-height:350px;padding:38px 27px 48px}
+  .pageNumber{font-size:50px}
+  .readingActions{grid-template-columns:1fr 1fr}
+  .readingActions .wide{grid-column:1/-1;grid-row:1}
+  .readingActions .secondary{grid-row:2}
+  .reader{flex:1 1 calc(50% - 8px)}
+  nav{height:calc(78px + env(safe-area-inset-bottom))}
+}
+
+@media (max-width:380px){
+  .heroArt{display:none}
+  .hero p{font-size:15px}
+  .primaryAction{grid-template-columns:auto 1fr}
+  .primaryAction>svg:last-child{display:none}
+  nav button{min-width:50px}
+}
+
+@media (min-width:700px){
+  .app{max-width:1180px;box-shadow:0 0 44px rgba(49,92,76,.07)}
+  main{padding-left:60px;padding-right:60px}
+  nav{max-width:1180px}
+  .books{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}

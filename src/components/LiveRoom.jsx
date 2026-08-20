@@ -89,7 +89,7 @@ export function LiveRoom({room,setView,session}){
   const isConnecting=live.channelState==="connecting";
   const micBusy=live.micState==="requesting";
 
-  return <>
+  return <section className="liveRoomView">
     <button className="back" onClick={()=>setView("rooms")}>‹ 읽기방으로</button>
 
     <section className="room">
@@ -144,7 +144,7 @@ export function LiveRoom({room,setView,session}){
 
     <div className="readingActions">
       <button className="secondary" onClick={()=>changePage(pageRef.current-1)} disabled={page<=1}>← 이전 쪽</button>
-      <button className={`wide liveButton ${live.micState}`} onClick={live.toggleMic} disabled={isConnecting||micBusy}>
+      <button className={`wide liveButton ${live.micState}`} onClick={live.toggleMic} disabled={isConnecting||micBusy} aria-pressed={live.micState==="live"}>
         {micBusy?"마이크 권한 확인 중…":live.micState==="live"?"🔴 내 마이크 음소거":live.micState==="muted"?"🎙 음소거 해제":"🎙 LIVE 함께 읽기"}
       </button>
       <button className="secondary" onClick={()=>changePage(pageRef.current+1)} disabled={page>=TOTAL_PAGES}>다음 쪽 →</button>
@@ -166,5 +166,5 @@ export function LiveRoom({room,setView,session}){
       onPlaying={onAudioPlaying}
       onElement={onAudioElement}
     />)}
-  </>;
+  </section>;
 }
