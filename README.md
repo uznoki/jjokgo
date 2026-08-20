@@ -17,6 +17,7 @@
 - 같은 방 참여자 간 현재 페이지 동기화
 - 모바일 Safari/Chrome 오디오 재생 정책 대응
 - 읽기방별 고유 초대 코드와 참여자 멤버십
+- 닉네임만 입력하는 익명 게스트 초대 링크 (`?invite=초대코드`)
 - 참여 중인 방/내가 만든 방 분리
 - Open Library 기반 도서 카탈로그 검색
 - Google Books API 키 설정 시 통합 도서 검색
@@ -61,6 +62,18 @@ VITE_GOOGLE_BOOKS_API_KEY
 ```
 
 ## LIVE 음성 네트워크
+
+## 게스트 초대 링크
+
+방 소유자가 방 목록의 초대 코드를 누르면 아래 형태의 링크가 복사됩니다.
+
+```text
+https://YOUR_PREVIEW_URL/?invite=ROOM_INVITE_CODE
+```
+
+비로그인 방문자는 닉네임만 입력하고 Supabase 익명 인증으로 임시 세션을 만든 뒤 기존 `join_reading_room_by_code` RPC를 통해 방 멤버가 됩니다. 이를 사용하려면 Supabase Dashboard의 Authentication 설정에서 Anonymous Sign-Ins를 활성화해야 합니다. 익명 사용자도 `authenticated` 역할을 사용하므로 기존 방 RLS와 LiveKit 토큰 검증을 그대로 거칩니다.
+
+공개 링크의 남용 방지를 위해 정식 공개 전에는 CAPTCHA와 게스트 계정 정리 정책을 추가하세요. 게스트 세션은 정식 회원의 서재·기록으로 자동 승계되지 않습니다.
 
 ### LiveKit Cloud (권장)
 

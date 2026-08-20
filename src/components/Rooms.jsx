@@ -21,7 +21,9 @@ function RoomCard({room,onOpen,showInvite=false,onEditBook}){
   const [copied,setCopied]=useState(false);
   async function copyCode(){
     if(!room.invite_code)return;
-    await navigator.clipboard.writeText(room.invite_code);
+    const inviteUrl=new URL(window.location.origin);
+    inviteUrl.searchParams.set("invite",room.invite_code);
+    await navigator.clipboard.writeText(inviteUrl.toString());
     setCopied(true);
     setTimeout(()=>setCopied(false),1200);
   }
@@ -35,7 +37,7 @@ function RoomCard({room,onOpen,showInvite=false,onEditBook}){
       <ChevronRight/>
     </button>
     {showInvite&&<div className="roomOwnerActions">
-      {room.invite_code&&<button className="inviteCode" onClick={copyCode} aria-label="초대 코드 복사"><Copy/> {copied?"복사됨":room.invite_code}</button>}
+      {room.invite_code&&<button className="inviteCode" onClick={copyCode} aria-label="게스트 초대 링크 복사"><Copy/> {copied?"링크 복사됨":room.invite_code}</button>}
       {room.books&&<button className="editBookButton" onClick={()=>onEditBook(room.books)}><Pencil/> 책 정보 보완</button>}
     </div>}
   </div>;
@@ -216,7 +218,9 @@ export function CreateRoom({setV,session}){
   }
 
   async function copyInvite(){
-    await navigator.clipboard.writeText(createdRoom.invite_code);
+    const inviteUrl=new URL(window.location.origin);
+    inviteUrl.searchParams.set("invite",createdRoom.invite_code);
+    await navigator.clipboard.writeText(inviteUrl.toString());
     setCopied(true);
   }
 
@@ -224,8 +228,8 @@ export function CreateRoom({setV,session}){
     return <section className="auth createdRoom">
       <div className="authBrand">쪽<span>GO</span></div>
       <h1>읽기방이 만들어졌어요!</h1>
-      <p>함께 읽을 사람에게 아래 코드를 보내주세요.</p>
-      <button className="createdInviteCode" onClick={copyInvite}><Copy/><b>{createdRoom.invite_code}</b><small>{copied?"복사됐어요":"눌러서 복사"}</small></button>
+      <p>함께 읽을 사람에게 게스트 초대 링크를 보내주세요.</p>
+      <button className="createdInviteCode" onClick={copyInvite}><Copy/><b>{createdRoom.invite_code}</b><small>{copied?"초대 링크가 복사됐어요":"눌러서 게스트 링크 복사"}</small></button>
       <button className="wide" onClick={()=>setV("rooms")}>읽기방 목록으로</button>
     </section>;
   }
