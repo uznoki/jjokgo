@@ -8,11 +8,25 @@ export function RemoteAudio({id,stream,onBlocked,onPlaying,onElement}){
     if(!audio)return;
     audio.srcObject=stream;
     onElement(id,audio);
-    const result=audio.play();
-    if(result?.catch){
-      result.then(()=>onPlaying(id)).catch(()=>onBlocked(id));
-    }
+    const play=()=>{
+      const result=audio.play();
+      if(result?.catch)result.then(()=>onPlaying(id)).catch(()=>onBlocked(id));
+    };
+    const playing=()=>onPlaying(id);
+    const interrupted=()=>onBlocked(id);
+    const track=stream.getAudioTracks()[0];
+    audio.addEventListener("playing",playing);
+    audio.addEventListener("pause",interrupted);
+    audio.addEventListener("stalled",interrupted);
+    track?.addEventListener("mute",interrupted);
+    track?.addEventListener("unmute",play);
+    play();
     return ()=>{
+      audio.removeEventListener("playing",playing);
+      audio.removeEventListener("pause",interrupted);
+      audio.removeEventListener("stalled",interrupted);
+      track?.removeEventListener("mute",interrupted);
+      track?.removeEventListener("unmute",play);
       onElement(id,null);
       audio.pause();
       audio.srcObject=null;

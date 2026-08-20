@@ -3,6 +3,8 @@ import {supabase} from "../supabase";
 
 const ICE_SERVERS=[{urls:"stun:stun.l.google.com:19302"}];
 const FAILED_STATES=new Set(["failed","closed"]);
+const ICE_RESTART_DELAY=4000;
+const PEER_REBUILD_DELAY=7000;
 
 function makePeerId(){
   return globalThis.crypto?.randomUUID?.()||`${Math.random().toString(36).slice(2)}-${Date.now()}`;
@@ -25,7 +27,7 @@ function flattenPresence(state){
   return [...latest.values()];
 }
 
-export function useLiveRoom({roomId,displayName,initialPage=17,onRemotePage}){
+export function useLiveRoom({roomId,displayName,initialPage=17,onRemotePage,enabled=true}){
   const selfIdRef=useRef(makePeerId());
   const channelRef=useRef(null);
   const peersRef=useRef(new Map());
@@ -36,10 +38,11 @@ export function useLiveRoom({roomId,displayName,initialPage=17,onRemotePage}){
   const activeRef=useRef(false);
   const onRemotePageRef=useRef(onRemotePage);
   const disconnectTimersRef=useRef(new Map());
+  const rebuildPeerRef=useRef(null);
   const [participants,setParticipants]=useState([]);
   const [remoteStreams,setRemoteStreams]=useState([]);
   const [connectionStates,setConnectionStates]=useState({});
-  const [channelState,setChannelState]=useState(roomId?"connecting":"idle");
+  const [channelState,setChannelState]=useState(enabled&&roomId?"connecting":"idle");
   const [micState,setMicState]=useState("idle");
   const [message,setMessage]=useState("");
 
@@ -94,8 +97,14 @@ export function useLiveRoom({roomId,displayName,initialPage=17,onRemotePage}){
   },[]);
 
   const signalDescription=useCallback(async(remoteId,peer)=>{
-    if(!activeRef.current||peer.makingOffer||peer.pc.signalingState==="closed")return;
+    if(!activeRef.current||peer.pc.signalingState==="closed")return;
+    if(peer.negotiating||peer.pc.signalingState!=="stable"){
+      peer.pendingNegotiation=true;
+      return;
+    }
     try{
+      peer.negotiating=true;
+      peer.pendingNegotiation=false;
       peer.makingOffer=true;
       await peer.pc.setLocalDescription();
       await send("description",{to:remoteId,description:peer.pc.localDescription});
@@ -105,6 +114,7 @@ export function useLiveRoom({roomId,displayName,initialPage=17,onRemotePage}){
       setMessage("일부 참여자와 음성 연결을 다시 시도하고 있어요.");
     }finally{
       peer.makingOffer=false;
+      peer.negotiating=false;
     }
   },[send,updateConnection]);
 
@@ -123,14 +133,25 @@ export function useLiveRoom({roomId,displayName,initialPage=17,onRemotePage}){
       transceiver,
       polite:selfIdRef.current>remoteId,
       makingOffer:false,
+      negotiating:false,
+      pendingNegotiation:false,
       ignoreOffer:false,
       settingRemoteAnswer:false,
-      pendingCandidates:[]
+      pendingCandidates:[],
+      descriptionQueue:Promise.resolve()
     };
     peersRef.current.set(remoteId,peer);
     updateConnection(remoteId,"connecting");
 
-    pc.onnegotiationneeded=()=>signalDescription(remoteId,peer);
+    pc.onnegotiationneeded=()=>{
+      // Only one side creates the very first offer. Later renegotiations can
+      // originate from either side when its microphone direction changes.
+      if(!pc.remoteDescription&&selfIdRef.current>remoteId){
+        peer.pendingNegotiation=true;
+        return;
+      }
+      signalDescription(remoteId,peer);
+    };
     pc.onicecandidate=event=>{
       if(!event.candidate)return;
       send("ice",{to:remoteId,candidate:event.candidate}).catch(error=>console.error("ICE send failed",error));
@@ -157,15 +178,33 @@ export function useLiveRoom({roomId,displayName,initialPage=17,onRemotePage}){
           if(pc.connectionState==="disconnected"){
             try{pc.restartIce()}catch(error){console.error("ICE restart failed",error)}
             if(selfIdRef.current<remoteId)signalDescription(remoteId,peer);
+            if(selfIdRef.current<remoteId){
+              const rebuildTimer=setTimeout(()=>{
+                disconnectTimersRef.current.delete(remoteId);
+                if(["disconnected","failed"].includes(pc.connectionState)){
+                  rebuildPeerRef.current?.(remoteId,true);
+                }
+              },PEER_REBUILD_DELAY);
+              disconnectTimersRef.current.set(remoteId,rebuildTimer);
+            }
           }
-        },5000);
+        },ICE_RESTART_DELAY);
         disconnectTimersRef.current.set(remoteId,timer);
       }
       if(FAILED_STATES.has(state)){
-        setMessage("일부 참여자와 음성 연결이 끊겼어요. 방을 나갔다 다시 들어오면 재연결할 수 있어요.");
+        setMessage("일부 참여자와 음성 연결이 끊겨 자동으로 다시 연결하고 있어요.");
         if(state==="failed"){
           try{pc.restartIce()}catch(error){console.error("ICE restart failed",error)}
-          if(selfIdRef.current<remoteId)signalDescription(remoteId,peer);
+          if(selfIdRef.current<remoteId){
+            signalDescription(remoteId,peer);
+            if(!disconnectTimersRef.current.has(remoteId)){
+              const rebuildTimer=setTimeout(()=>{
+                disconnectTimersRef.current.delete(remoteId);
+                if(pc.connectionState!=="connected")rebuildPeerRef.current?.(remoteId,true);
+              },PEER_REBUILD_DELAY);
+              disconnectTimersRef.current.set(remoteId,rebuildTimer);
+            }
+          }
         }
       }
     };
@@ -176,34 +215,44 @@ export function useLiveRoom({roomId,displayName,initialPage=17,onRemotePage}){
     if(payload.to!==selfIdRef.current||!payload.description)return;
     const peer=ensurePeer(payload.from);
     if(!peer)return;
-    const {pc}=peer;
-    const description=payload.description;
-    const readyForOffer=!peer.makingOffer&&(pc.signalingState==="stable"||peer.settingRemoteAnswer);
-    const offerCollision=description.type==="offer"&&!readyForOffer;
-    peer.ignoreOffer=!peer.polite&&offerCollision;
-    if(peer.ignoreOffer)return;
-    try{
-      peer.settingRemoteAnswer=description.type==="answer";
-      if(offerCollision&&pc.signalingState!=="stable"){
-        await Promise.all([pc.setLocalDescription({type:"rollback"}),pc.setRemoteDescription(description)]);
-      }else{
+    peer.descriptionQueue=peer.descriptionQueue.catch(()=>{}).then(async()=>{
+      const {pc}=peer;
+      if(pc.signalingState==="closed")return;
+      const description=payload.description;
+      const readyForOffer=!peer.makingOffer&&(pc.signalingState==="stable"||peer.settingRemoteAnswer);
+      const offerCollision=description.type==="offer"&&!readyForOffer;
+      peer.ignoreOffer=!peer.polite&&offerCollision;
+      if(peer.ignoreOffer)return;
+      try{
+        peer.settingRemoteAnswer=description.type==="answer";
+        // Safari is sensitive to rollback and setRemoteDescription running at
+        // the same time. Complete rollback first, then apply the remote offer.
+        if(offerCollision&&pc.signalingState!=="stable"){
+          await pc.setLocalDescription({type:"rollback"});
+        }
         await pc.setRemoteDescription(description);
+        peer.settingRemoteAnswer=false;
+        while(peer.pendingCandidates.length){
+          try{await pc.addIceCandidate(peer.pendingCandidates.shift())}
+          catch(error){console.warn("Queued ICE candidate skipped",error)}
+        }
+        if(description.type==="offer"){
+          await pc.setLocalDescription();
+          await send("description",{to:payload.from,description:pc.localDescription});
+          peer.pendingNegotiation=false;
+        }else if(peer.pendingNegotiation&&pc.signalingState==="stable"){
+          await signalDescription(payload.from,peer);
+        }
+      }catch(error){
+        peer.settingRemoteAnswer=false;
+        console.error("WebRTC description failed",error);
+        updateConnection(payload.from,"failed");
+        setMessage("음성 연결을 다시 구성하고 있어요. 잠시만 기다려주세요.");
+        if(selfIdRef.current<payload.from)rebuildPeerRef.current?.(payload.from,true);
       }
-      peer.settingRemoteAnswer=false;
-      while(peer.pendingCandidates.length){
-        await pc.addIceCandidate(peer.pendingCandidates.shift());
-      }
-      if(description.type==="offer"){
-        await pc.setLocalDescription();
-        await send("description",{to:payload.from,description:pc.localDescription});
-      }
-    }catch(error){
-      peer.settingRemoteAnswer=false;
-      console.error("WebRTC description failed",error);
-      updateConnection(payload.from,"failed");
-      setMessage("음성 연결 협상에 실패했어요. 네트워크 상태를 확인해주세요.");
-    }
-  },[ensurePeer,send,updateConnection]);
+    });
+    await peer.descriptionQueue;
+  },[ensurePeer,send,signalDescription,updateConnection]);
 
   const handleIce=useCallback(async payload=>{
     if(payload.to!==selfIdRef.current||!payload.candidate)return;
@@ -217,8 +266,23 @@ export function useLiveRoom({roomId,displayName,initialPage=17,onRemotePage}){
     }
   },[ensurePeer]);
 
+  const rebuildPeer=useCallback(async(remoteId,notifyRemote=false)=>{
+    if(!activeRef.current||!remoteId||remoteId===selfIdRef.current)return;
+    closePeer(remoteId);
+    if(notifyRemote){
+      await send("peer-reset",{to:remoteId}).catch(error=>console.error("Peer reset send failed",error));
+    }
+    const peer=ensurePeer(remoteId);
+    if(peer&&selfIdRef.current<remoteId)await signalDescription(remoteId,peer);
+  },[closePeer,ensurePeer,send,signalDescription]);
+
   useEffect(()=>{
-    if(!roomId){
+    rebuildPeerRef.current=rebuildPeer;
+    return ()=>{if(rebuildPeerRef.current===rebuildPeer)rebuildPeerRef.current=null};
+  },[rebuildPeer]);
+
+  useEffect(()=>{
+    if(!enabled||!roomId){
       setChannelState("idle");
       return;
     }
@@ -257,6 +321,9 @@ export function useLiveRoom({roomId,displayName,initialPage=17,onRemotePage}){
       })
       .on("broadcast",{event:"description"},({payload})=>handleDescription(payload))
       .on("broadcast",{event:"ice"},({payload})=>handleIce(payload))
+      .on("broadcast",{event:"peer-reset"},({payload})=>{
+        if(payload.to===selfIdRef.current)rebuildPeer(payload.from,false);
+      })
       .on("broadcast",{event:"leave"},({payload})=>closePeer(payload.from))
       .on("broadcast",{event:"page-request"},({payload})=>{
         if(payload.from===selfIdRef.current)return;
@@ -308,7 +375,7 @@ export function useLiveRoom({roomId,displayName,initialPage=17,onRemotePage}){
       setRemoteStreams([]);
       setParticipants([]);
     };
-  },[roomId,displayName,initialPage,closePeer,ensurePeer,handleDescription,handleIce,publishPresence,send]);
+  },[enabled,roomId,displayName,initialPage,closePeer,ensurePeer,handleDescription,handleIce,publishPresence,rebuildPeer,send]);
 
   const toggleMic=useCallback(async()=>{
     setMessage("");
@@ -389,6 +456,7 @@ export function useLiveRoom({roomId,displayName,initialPage=17,onRemotePage}){
     micState,
     message,
     toggleMic,
-    broadcastPage
+    broadcastPage,
+    provider:"peer"
   };
 }

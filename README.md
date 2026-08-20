@@ -12,7 +12,7 @@
 - 비로그인 사용자가 함께 읽기 기능을 누르면 로그인으로 이동
 - Supabase DB 기반 읽기방 생성 및 소유한 방 조회
 - Supabase Realtime Presence 기반 참여자 입장/퇴장 및 LIVE/음소거 상태
-- WebRTC mesh 기반 참여자 간 실시간 음성
+- LiveKit Cloud 또는 WebRTC mesh fallback 기반 참여자 간 실시간 음성
 - 늦은 입장과 마이크 후활성화를 위한 WebRTC 재협상
 - 같은 방 참여자 간 현재 페이지 동기화
 - 모바일 Safari/Chrome 오디오 재생 정책 대응
@@ -48,6 +48,12 @@ supabase/migrations/20260820060000_book_catalog_v1.sql
 
 이 마이그레이션은 기존 `books` 데이터를 삭제하지 않고 저자, 출판사, 출간일, ISBN, 표지, 데이터 출처와 작성자 필드를 추가합니다. 또한 검색 결과나 수동 입력을 중복 확인 후 저장하는 `save_catalog_book` RPC와 방 소유자의 책 정보 보완 정책을 만듭니다.
 
+기존 책 ID와 자동 증가 시퀀스의 충돌을 방지하려면 다음 보완 마이그레이션도 적용하세요.
+
+```text
+supabase/migrations/20260820120000_realign_books_id_sequence.sql
+```
+
 기본 도서 검색은 인증키가 필요 없는 Open Library를 사용합니다. 더 폭넓은 결과를 함께 표시하려면 Google Books API에서 발급하고 웹사이트 제한을 설정한 키를 아래 환경변수로 추가하세요. 키가 없어도 기본 검색과 직접 등록은 정상 동작합니다.
 
 ```text
@@ -56,7 +62,28 @@ VITE_GOOGLE_BOOKS_API_KEY
 
 ## LIVE 음성 네트워크
 
-현재 WebRTC ICE 설정은 공개 STUN 서버만 사용합니다.
+### LiveKit Cloud (권장)
+
+LiveKit을 사용하면 미디어 연결, TURN fallback, 네트워크 전환 재연결을 관리형 RTC 인프라에 맡기면서 쪽GO의 기존 방·책·페이지 UI를 유지할 수 있습니다.
+
+1. LiveKit Cloud에서 프로젝트를 만듭니다.
+2. Vercel의 Preview 환경에 아래 서버 환경변수를 등록합니다.
+3. 세 값 등록 후 `VITE_LIVEKIT_ENABLED=true`로 전환합니다.
+
+```text
+LIVEKIT_URL=wss://YOUR_PROJECT.livekit.cloud
+LIVEKIT_API_KEY=...
+LIVEKIT_API_SECRET=...
+VITE_LIVEKIT_ENABLED=true
+```
+
+`LIVEKIT_API_SECRET`은 서버 전용입니다. `VITE_` 접두사를 붙이거나 브라우저 코드, GitHub, `.env.example`의 실제 값으로 저장하면 안 됩니다.
+
+`api/livekit-token.js`는 Supabase access token을 검증하고 `reading_room_members` 멤버십이 확인된 사용자에게만 1시간짜리 LiveKit room token을 발급합니다. 로컬에서 이 API까지 테스트하려면 Vite 단독 실행 대신 Vercel 개발 서버 또는 별도 토큰 API 주소가 필요합니다.
+
+### WebRTC mesh fallback
+
+`VITE_LIVEKIT_ENABLED`가 `false`이거나 없으면 기존 WebRTC mesh가 동작합니다. 이 fallback의 ICE 설정은 공개 STUN 서버만 사용합니다.
 
 ```js
 [{ urls: "stun:stun.l.google.com:19302" }]
@@ -78,5 +105,7 @@ npm run dev
 `.env`는 GitHub에 올리지 마세요. Vercel Project Settings > Environment Variables에 아래 두 값을 등록해야 합니다.
 - VITE_SUPABASE_URL
 - VITE_SUPABASE_PUBLISHABLE_KEY
+
+LiveKit 전환 시에는 위의 LiveKit 환경변수 네 개도 Preview에 등록해야 합니다. 먼저 Preview에서 모바일 음성 테스트를 완료한 다음 Production에 같은 구성을 적용하세요.
 
 홈과 MY 쪽GO의 독서 통계/달력은 아직 데모 데이터입니다. 녹음 파일 저장은 LIVE 독서방과 별도의 다음 단계 기능입니다.

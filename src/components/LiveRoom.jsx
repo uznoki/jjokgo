@@ -1,5 +1,6 @@
-import {useCallback,useRef,useState} from "react";
+import {useCallback,useEffect,useRef,useState} from "react";
 import {RemoteAudio} from "./RemoteAudio";
+import {useLiveKitRoom} from "../hooks/useLiveKitRoom";
 import {useLiveRoom} from "../hooks/useLiveRoom";
 
 const TOTAL_PAGES=27;
@@ -26,7 +27,10 @@ export function LiveRoom({room,setView,session}){
   },[]);
 
   const displayName=session?.user?.user_metadata?.nickname||session?.user?.email?.split("@")[0]||"쪽GO 참여자";
-  const live=useLiveRoom({roomId:room?.id,displayName,initialPage:17,onRemotePage});
+  const liveKitEnabled=import.meta.env.VITE_LIVEKIT_ENABLED==="true";
+  const peerLive=useLiveRoom({roomId:room?.id,displayName,initialPage:17,onRemotePage,enabled:!liveKitEnabled});
+  const liveKitLive=useLiveKitRoom({roomId:room?.id,displayName,session,initialPage:17,onRemotePage,enabled:liveKitEnabled});
+  const live=liveKitEnabled?liveKitLive:peerLive;
 
   const onAudioElement=useCallback((id,element)=>{
     if(element)audioElementsRef.current.set(id,element);
@@ -39,7 +43,8 @@ export function LiveRoom({room,setView,session}){
     setBlockedAudioIds(prev=>prev.filter(item=>item!==id));
   },[]);
 
-  async function enableRemoteAudio(){
+  const enableRemoteAudio=useCallback(async()=>{
+    await live.startAudio?.();
     const results=await Promise.allSettled(
       [...audioElementsRef.current.entries()].map(async([id,audio])=>{
         await audio.play();
@@ -49,7 +54,21 @@ export function LiveRoom({room,setView,session}){
     if(results.some(result=>result.status==="rejected")){
       setBlockedAudioIds(prev=>prev.length?prev:["unknown"]);
     }
-  }
+  },[live.startAudio,onAudioPlaying]);
+
+  useEffect(()=>{
+    const resumeAudio=()=>{
+      if(document.visibilityState==="visible")enableRemoteAudio();
+    };
+    document.addEventListener("visibilitychange",resumeAudio);
+    window.addEventListener("pageshow",resumeAudio);
+    window.addEventListener("online",resumeAudio);
+    return ()=>{
+      document.removeEventListener("visibilitychange",resumeAudio);
+      window.removeEventListener("pageshow",resumeAudio);
+      window.removeEventListener("online",resumeAudio);
+    };
+  },[enableRemoteAudio]);
 
   function changePage(next){
     const safePage=Math.max(1,Math.min(TOTAL_PAGES,next));
