@@ -1,9 +1,13 @@
 import {createClient} from "@supabase/supabase-js";
-import {AccessToken} from "livekit-server-sdk";
+import {AccessToken,TrackSource} from "livekit-server-sdk";
+
+const SAFE_ID=/^[a-zA-Z0-9_-]+$/;
+const MAX_ID_LENGTH=128;
 
 function json(response,status,body){
   response.status(status).setHeader("Content-Type","application/json");
   response.setHeader("Cache-Control","no-store");
+  response.setHeader("X-Content-Type-Options","nosniff");
   response.end(JSON.stringify(body));
 }
 
@@ -19,15 +23,16 @@ export default async function handler(request,response){
     return json(response,503,{error:"LIVEKIT_NOT_CONFIGURED"});
   }
 
-  const authorization=request.headers.authorization||"";
+  const authorization=String(request.headers.authorization||"");
+  if(authorization.length>8192)return json(response,400,{error:"INVALID_AUTHORIZATION"});
   const accessToken=authorization.startsWith("Bearer ")?authorization.slice(7):"";
   const roomId=String(request.body?.roomId||"").trim();
   const connectionId=String(request.body?.connectionId||"").trim();
   if(!accessToken)return json(response,401,{error:"AUTH_REQUIRED"});
-  if(!roomId||roomId.length>128||!/^[a-zA-Z0-9_-]+$/.test(roomId)){
+  if(!roomId||roomId.length>MAX_ID_LENGTH||!SAFE_ID.test(roomId)){
     return json(response,400,{error:"INVALID_ROOM_ID"});
   }
-  if(!connectionId||connectionId.length>128||!/^[a-zA-Z0-9_-]+$/.test(connectionId)){
+  if(!connectionId||connectionId.length>MAX_ID_LENGTH||!SAFE_ID.test(connectionId)){
     return json(response,400,{error:"INVALID_CONNECTION_ID"});
   }
 
@@ -56,8 +61,10 @@ export default async function handler(request,response){
     roomJoin:true,
     room:`jjokgo-${roomId}`,
     canPublish:true,
+    canPublishSources:[TrackSource.MICROPHONE],
     canSubscribe:true,
-    canPublishData:true
+    canPublishData:false,
+    canUpdateOwnMetadata:false
   });
 
   return json(response,200,{serverUrl:livekitUrl,token:await token.toJwt()});

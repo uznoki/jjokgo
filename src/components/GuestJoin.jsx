@@ -1,8 +1,7 @@
 import {useState} from "react";
 import {LogIn,UserRound} from "lucide-react";
 import {supabase} from "../supabase";
-
-const BOOK_FIELDS="id,title,author,publisher,published_date,isbn_10,isbn_13,cover_url,metadata_status";
+import {joinReadingRoom} from "../services/readingRooms";
 
 function guestError(error){
   const message=String(error?.message||"");
@@ -24,12 +23,14 @@ export function GuestJoin({inviteCode,session,onJoined,onCancel}){
     if(!name){setMessage("함께 읽을 때 사용할 이름을 입력해주세요.");return;}
     setBusy(true);
     setMessage("");
+    let createdAnonymousSession=false;
     try{
       let activeSession=session;
       if(!activeSession){
         const {data,error}=await supabase.auth.signInAnonymously({options:{data:{nickname:name}}});
         if(error)throw error;
         activeSession=data.session;
+        createdAnonymousSession=true;
       }else if(activeSession.user?.is_anonymous&&savedName!==name){
         const {data,error}=await supabase.auth.updateUser({data:{nickname:name}});
         if(error)throw error;
@@ -37,21 +38,10 @@ export function GuestJoin({inviteCode,session,onJoined,onCancel}){
       }
       if(!activeSession)throw new Error("GUEST_SESSION_REQUIRED");
 
-      const {data:joinedResult,error:joinError}=await supabase.rpc("join_reading_room_by_code",{
-        p_invite_code:inviteCode
-      });
-      if(joinError)throw joinError;
-      const joined=Array.isArray(joinedResult)?joinedResult[0]:joinedResult;
-      if(!joined?.id)throw new Error("INVALID_INVITE_CODE");
-
-      const {data:room,error:roomError}=await supabase
-        .from("reading_rooms")
-        .select(`*, books(${BOOK_FIELDS})`)
-        .eq("id",joined.id)
-        .single();
-      if(roomError||!room)throw roomError||new Error("ROOM_NOT_FOUND");
+      const room=await joinReadingRoom(inviteCode);
       onJoined({session:activeSession,room});
     }catch(error){
+      if(createdAnonymousSession)await supabase.auth.signOut().catch(()=>{});
       setMessage(guestError(error));
       setBusy(false);
     }

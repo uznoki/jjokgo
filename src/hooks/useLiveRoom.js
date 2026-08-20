@@ -294,7 +294,11 @@ export function useLiveRoom({roomId,displayName,initialPage=17,onRemotePage,enab
     setChannelState("connecting");
     setMessage("LIVE 독서방에 연결하고 있어요…");
     const channel=supabase.channel(`live-room-${roomId}`,{
-      config:{broadcast:{self:false},presence:{key:selfIdRef.current}}
+      config:{
+        private:true,
+        broadcast:{self:false,ack:true},
+        presence:{key:selfIdRef.current}
+      }
     });
     channelRef.current=channel;
 

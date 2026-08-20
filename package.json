@@ -1,1 +1,23 @@
-{"name":"jjokgo","version":"0.2.0","private":true,"type":"module","scripts":{"dev":"vite","build":"vite build","preview":"vite preview"},"dependencies":{"@supabase/supabase-js":"^2.112.3","@vitejs/plugin-react":"latest","livekit-client":"^2.22.0","livekit-server-sdk":"^2.18.0","lucide-react":"latest","react":"latest","react-dom":"latest","vite":"latest"}}
+{
+  "name": "jjokgo",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.3",
+    "livekit-client": "^2.22.0",
+    "livekit-server-sdk": "^2.18.0",
+    "lucide-react": "^1.32.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.5",
+    "vite": "^8.2.1"
+  }
+}

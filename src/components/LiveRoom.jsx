@@ -22,14 +22,15 @@ export function LiveRoom({room,setView,session}){
   const [blockedAudioIds,setBlockedAudioIds]=useState([]);
 
   const onRemotePage=useCallback(next=>{
-    pageRef.current=next;
-    setPage(next);
+    const safePage=Math.max(1,Math.min(TOTAL_PAGES,Number(next)||1));
+    pageRef.current=safePage;
+    setPage(safePage);
   },[]);
 
   const displayName=session?.user?.user_metadata?.nickname||session?.user?.email?.split("@")[0]||"쪽GO 참여자";
   const liveKitEnabled=import.meta.env.VITE_LIVEKIT_ENABLED==="true";
   const peerLive=useLiveRoom({roomId:room?.id,displayName,initialPage:17,onRemotePage,enabled:!liveKitEnabled});
-  const liveKitLive=useLiveKitRoom({roomId:room?.id,displayName,session,initialPage:17,onRemotePage,enabled:liveKitEnabled});
+  const liveKitLive=useLiveKitRoom({roomId:room?.id,session,initialPage:17,onRemotePage,enabled:liveKitEnabled});
   const live=liveKitEnabled?liveKitLive:peerLive;
 
   const onAudioElement=useCallback((id,element)=>{

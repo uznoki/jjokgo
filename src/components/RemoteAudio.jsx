@@ -18,14 +18,12 @@ export function RemoteAudio({id,stream,onBlocked,onPlaying,onElement}){
     audio.addEventListener("playing",playing);
     audio.addEventListener("pause",interrupted);
     audio.addEventListener("stalled",interrupted);
-    track?.addEventListener("mute",interrupted);
     track?.addEventListener("unmute",play);
     play();
     return ()=>{
       audio.removeEventListener("playing",playing);
       audio.removeEventListener("pause",interrupted);
       audio.removeEventListener("stalled",interrupted);
-      track?.removeEventListener("mute",interrupted);
       track?.removeEventListener("unmute",play);
       onElement(id,null);
       audio.pause();

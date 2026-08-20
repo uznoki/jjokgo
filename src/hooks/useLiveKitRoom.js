@@ -35,7 +35,7 @@ function makePagePeerId(){
   return globalThis.crypto?.randomUUID?.()||`${Math.random().toString(36).slice(2)}-${Date.now()}`;
 }
 
-export function useLiveKitRoom({roomId,displayName,session,initialPage=17,onRemotePage,enabled=false}){
+export function useLiveKitRoom({roomId,session,initialPage=17,onRemotePage,enabled=false}){
   const roomRef=useRef(null);
   const channelRef=useRef(null);
   const pagePeerIdRef=useRef(makePagePeerId());
@@ -88,6 +88,7 @@ export function useLiveKitRoom({roomId,displayName,session,initialPage=17,onRemo
 
     let livekitRoom=null;
     let cancelled=false;
+    const connectionController=new AbortController();
     const updateParticipants=()=>refreshParticipants();
     const addTrack=(track,_publication,participant)=>{
       if(track.kind!=="audio")return;
@@ -132,7 +133,11 @@ export function useLiveKitRoom({roomId,displayName,session,initialPage=17,onRemo
     };
 
     const pageChannel=supabase.channel(`livekit-page-${roomId}`,{
-      config:{broadcast:{self:false},presence:{key:pagePeerIdRef.current}}
+      config:{
+        private:true,
+        broadcast:{self:false,ack:true},
+        presence:{key:pagePeerIdRef.current}
+      }
     });
     channelRef.current=pageChannel;
     const sendPage=(event,payload)=>pageChannel.send({
@@ -155,7 +160,7 @@ export function useLiveKitRoom({roomId,displayName,session,initialPage=17,onRemo
         }
       })
       .subscribe(async status=>{
-        if(status==="SUBSCRIBED"){
+        if(status==="SUBSCRIBED"&&activeRef.current&&!cancelled){
           await pageChannel.track({peerId:pagePeerIdRef.current});
           await sendPage("page-request",{}).catch(console.error);
         }
@@ -184,18 +189,23 @@ export function useLiveKitRoom({roomId,displayName,session,initialPage=17,onRemo
         const response=await fetch(endpoint,{
           method:"POST",
           headers:{"Content-Type":"application/json",Authorization:`Bearer ${session.access_token}`},
-          body:JSON.stringify({roomId:String(roomId),displayName,connectionId:pagePeerIdRef.current})
+          body:JSON.stringify({roomId:String(roomId),connectionId:pagePeerIdRef.current}),
+          signal:connectionController.signal
         });
         const data=await response.json().catch(()=>({}));
         if(!response.ok)throw new Error(data.error||`LIVEKIT_TOKEN_${response.status}`);
-        await livekitRoom.connect(data.serverUrl,data.token,{autoSubscribe:true});
         if(cancelled)return;
+        await livekitRoom.connect(data.serverUrl,data.token,{autoSubscribe:true});
+        if(cancelled){
+          livekitRoom.disconnect();
+          return;
+        }
         setChannelState("connected");
         setMessage("");
         refreshParticipants();
       }catch(error){
+        if(cancelled||error?.name==="AbortError")return;
         console.error("LiveKit connection failed",error);
-        if(cancelled)return;
         setChannelState("error");
         setMessage(connectionMessage(error));
       }
@@ -204,16 +214,18 @@ export function useLiveKitRoom({roomId,displayName,session,initialPage=17,onRemo
     return ()=>{
       cancelled=true;
       activeRef.current=false;
+      connectionController.abort();
       pageChannel.untrack().catch(()=>{});
       supabase.removeChannel(pageChannel);
       channelRef.current=null;
       livekitRoom?.removeAllListeners();
+      livekitRoom?.localParticipant.setMicrophoneEnabled(false).catch(()=>{});
       livekitRoom?.disconnect();
       roomRef.current=null;
       setRemoteStreams([]);
       setParticipants([]);
     };
-  },[enabled,roomId,session?.access_token,displayName,initialPage,refreshParticipants]);
+  },[enabled,roomId,session?.access_token,initialPage,refreshParticipants]);
 
   const toggleMic=useCallback(async()=>{
     const room=roomRef.current;
@@ -259,12 +271,13 @@ export function useLiveKitRoom({roomId,displayName,session,initialPage=17,onRemo
     if(!room)return false;
     try{
       await room.startAudio();
+      if(channelState==="connected")setMessage("");
       return true;
     }catch(error){
       console.error("LiveKit audio playback failed",error);
       return false;
     }
-  },[]);
+  },[channelState]);
 
   return {participants,remoteStreams,channelState,micState,message,toggleMic,broadcastPage,startAudio,provider:"livekit"};
 }

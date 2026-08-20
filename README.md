@@ -55,6 +55,14 @@ supabase/migrations/20260820060000_book_catalog_v1.sql
 supabase/migrations/20260820120000_realign_books_id_sequence.sql
 ```
 
+게스트 입장을 운영 환경에서 안전하게 사용하려면 다음 보안 마이그레이션을 마지막으로 적용하세요.
+
+```text
+supabase/migrations/20260821010000_security_hardening_v1.sql
+```
+
+이 마이그레이션은 기존 초대 링크를 유지하면서 신규 초대 코드의 엔트로피를 높이고, 익명 게스트의 방·도서 생성 우회를 차단하며, `security definer` 함수의 검색 경로와 실행 권한을 제한합니다. 또한 도서 생성·수정을 검증된 RPC로 일원화하여 입력 길이·ISBN·표지 URL·출처를 서버에서 확인하고 다른 사용자가 만든 도서의 메타데이터를 권한 없이 변경하지 못하게 합니다. 페이지 동기화와 WebRTC fallback 신호 채널도 방 멤버만 접근 가능한 Supabase Realtime private channel로 보호합니다.
+
 기본 도서 검색은 인증키가 필요 없는 Open Library를 사용합니다. 더 폭넓은 결과를 함께 표시하려면 Google Books API에서 발급하고 웹사이트 제한을 설정한 키를 아래 환경변수로 추가하세요. 키가 없어도 기본 검색과 직접 등록은 정상 동작합니다.
 
 ```text
@@ -92,7 +100,7 @@ VITE_LIVEKIT_ENABLED=true
 
 `LIVEKIT_API_SECRET`은 서버 전용입니다. `VITE_` 접두사를 붙이거나 브라우저 코드, GitHub, `.env.example`의 실제 값으로 저장하면 안 됩니다.
 
-`api/livekit-token.js`는 Supabase access token을 검증하고 `reading_room_members` 멤버십이 확인된 사용자에게만 1시간짜리 LiveKit room token을 발급합니다. 로컬에서 이 API까지 테스트하려면 Vite 단독 실행 대신 Vercel 개발 서버 또는 별도 토큰 API 주소가 필요합니다.
+`api/livekit-token.js`는 Supabase access token을 검증하고 `reading_room_members` 멤버십이 확인된 사용자에게만 1시간짜리 LiveKit room token을 발급합니다. 토큰은 마이크 오디오 발행과 구독만 허용하며 카메라·화면 공유·데이터 발행 권한은 주지 않습니다. 로컬에서 이 API까지 테스트하려면 Vite 단독 실행 대신 Vercel 개발 서버 또는 별도 토큰 API 주소가 필요합니다.
 
 ### WebRTC mesh fallback
 

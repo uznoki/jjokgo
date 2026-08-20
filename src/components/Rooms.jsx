@@ -1,13 +1,17 @@
 import {useCallback,useEffect,useState} from "react";
 import {BookOpen,ChevronRight,Copy,Lock,Pencil,Users} from "lucide-react";
 import {supabase} from "../supabase";
+import {BOOK_FIELDS,guestInviteUrl,joinReadingRoom,normalizeInviteCode} from "../services/readingRooms";
 import BookPicker from "./BookPicker";
-
-const BOOK_FIELDS="id,title,author,publisher,published_date,isbn_10,isbn_13,cover_url,metadata_status";
 
 function roomError(error){
   const message=error?.message||"";
   if(message.includes("INVALID_INVITE_CODE"))return "초대 코드를 확인해주세요. 일치하는 읽기방이 없어요.";
+  if(message.includes("REGISTERED_USER_REQUIRED"))return "방과 책 만들기는 정식 로그인 후 이용할 수 있어요.";
+  if(message.includes("INVALID_ISBN"))return "ISBN 자리 수를 확인해주세요.";
+  if(message.includes("INVALID_COVER_URL"))return "표지 주소는 https://로 시작해야 해요.";
+  if(message.includes("BOOK_METADATA_TOO_LONG"))return "책 정보가 너무 길어요. 제목과 상세 정보를 줄여주세요.";
+  if(message.includes("BOOK_UPDATE_DENIED"))return "이 책 정보를 수정할 권한이 없어요.";
   if(message.includes("join_reading_room_by_code")||message.includes("reading_room_members")){
     return "초대 기능의 데이터베이스 설정이 아직 적용되지 않았어요.";
   }
@@ -21,9 +25,7 @@ function RoomCard({room,onOpen,showInvite=false,onEditBook}){
   const [copied,setCopied]=useState(false);
   async function copyCode(){
     if(!room.invite_code)return;
-    const inviteUrl=new URL(window.location.origin);
-    inviteUrl.searchParams.set("invite",room.invite_code);
-    await navigator.clipboard.writeText(inviteUrl.toString());
+    await navigator.clipboard.writeText(guestInviteUrl(room.invite_code));
     setCopied(true);
     setTimeout(()=>setCopied(false),1200);
   }
@@ -57,15 +59,16 @@ function BookMetadataEditor({book,onClose,onSaved}){
     if(!fields.title.trim()||!fields.author.trim()){setMessage("책 제목과 저자를 입력해주세요.");return;}
     setSaving(true);
     setMessage("");
-    const payload={
-      ...fields,
-      title:fields.title.trim(),author:fields.author.trim(),
-      isbn_10:fields.isbn_10.replace(/[^0-9X]/gi,"").toUpperCase()||null,
-      isbn_13:fields.isbn_13.replace(/[^0-9]/g,"")||null,
-      metadata_status:fields.publisher.trim()&&(fields.isbn_13||fields.isbn_10)&&fields.cover_url.trim()?"complete":"draft",
-      updated_at:new Date().toISOString()
-    };
-    const {error}=await supabase.from("books").update(payload).eq("id",book.id);
+    const {error}=await supabase.rpc("update_book_metadata",{
+      p_book_id:book.id,
+      p_title:fields.title,
+      p_author:fields.author,
+      p_publisher:fields.publisher||null,
+      p_published_date:fields.published_date||null,
+      p_isbn_10:fields.isbn_10||null,
+      p_isbn_13:fields.isbn_13||null,
+      p_cover_url:fields.cover_url||null
+    });
     if(error){setMessage(roomError(error));setSaving(false);return;}
     await onSaved();
     setSaving(false);
@@ -75,13 +78,13 @@ function BookMetadataEditor({book,onClose,onSaved}){
   return <section className="bookEditor">
     <div className="bookEditorHeading"><div><BookOpen/><span><b>책 정보 보완</b><small>임시 등록한 책도 언제든 완성할 수 있어요.</small></span></div><button onClick={onClose}>닫기</button></div>
     <form onSubmit={save}>
-      <label>책 제목<input required value={fields.title} onChange={event=>update("title",event.target.value)}/></label>
-      <label>저자<input required value={fields.author} onChange={event=>update("author",event.target.value)}/></label>
-      <label>출판사<input value={fields.publisher} onChange={event=>update("publisher",event.target.value)}/></label>
-      <label>출간일<input value={fields.published_date} onChange={event=>update("published_date",event.target.value)} placeholder="예: 2026-08-20"/></label>
-      <label>ISBN-13<input inputMode="numeric" value={fields.isbn_13} onChange={event=>update("isbn_13",event.target.value)}/></label>
-      <label>ISBN-10<input value={fields.isbn_10} onChange={event=>update("isbn_10",event.target.value)}/></label>
-      <label className="bookCoverUrl">표지 이미지 주소<input type="url" value={fields.cover_url} onChange={event=>update("cover_url",event.target.value)} placeholder="https://"/></label>
+      <label>책 제목<input required maxLength="300" value={fields.title} onChange={event=>update("title",event.target.value)}/></label>
+      <label>저자<input required maxLength="300" value={fields.author} onChange={event=>update("author",event.target.value)}/></label>
+      <label>출판사<input maxLength="300" value={fields.publisher} onChange={event=>update("publisher",event.target.value)}/></label>
+      <label>출간일<input maxLength="32" value={fields.published_date} onChange={event=>update("published_date",event.target.value)} placeholder="예: 2026-08-20"/></label>
+      <label>ISBN-13<input inputMode="numeric" maxLength="17" value={fields.isbn_13} onChange={event=>update("isbn_13",event.target.value)}/></label>
+      <label>ISBN-10<input maxLength="13" value={fields.isbn_10} onChange={event=>update("isbn_10",event.target.value)}/></label>
+      <label className="bookCoverUrl">표지 이미지 주소<input type="url" maxLength="2048" pattern="https://.*" value={fields.cover_url} onChange={event=>update("cover_url",event.target.value)} placeholder="https://"/></label>
       <button className="wide" disabled={saving}>{saving?"저장 중…":"책 정보 저장"}</button>
     </form>
     {message&&<div className="roomMessage">{message}</div>}
@@ -89,6 +92,7 @@ function BookMetadataEditor({book,onClose,onSaved}){
 }
 
 export function Rooms({setV,open,session,openAuth}){
+  const isGuest=Boolean(session?.user?.is_anonymous);
   const [ownedRooms,setOwnedRooms]=useState([]);
   const [joinedRooms,setJoinedRooms]=useState([]);
   const [activeTab,setActiveTab]=useState("joined");
@@ -102,8 +106,11 @@ export function Rooms({setV,open,session,openAuth}){
     if(!session){setBusy(false);return;}
     setBusy(true);
     setMessage("");
+    const ownedRequest=isGuest
+      ?Promise.resolve({data:[],error:null})
+      :supabase.from("reading_rooms").select(`*, books(${BOOK_FIELDS})`).eq("owner_id",session.user.id).order("created_at",{ascending:false});
     const [ownedResult,membershipResult]=await Promise.all([
-      supabase.from("reading_rooms").select(`*, books(${BOOK_FIELDS})`).eq("owner_id",session.user.id).order("created_at",{ascending:false}),
+      ownedRequest,
       supabase.from("reading_room_members").select(`role, joined_at, reading_rooms(*, books(${BOOK_FIELDS}))`).eq("user_id",session.user.id).eq("role","member").order("joined_at",{ascending:false})
     ]);
     if(ownedResult.error)setMessage(roomError(ownedResult.error));
@@ -111,7 +118,7 @@ export function Rooms({setV,open,session,openAuth}){
     if(membershipResult.error)setMessage(roomError(membershipResult.error));
     else setJoinedRooms((membershipResult.data||[]).map(item=>item.reading_rooms).filter(Boolean));
     setBusy(false);
-  },[session]);
+  },[isGuest,session]);
 
   useEffect(()=>{loadRooms()},[loadRooms]);
 
@@ -120,21 +127,17 @@ export function Rooms({setV,open,session,openAuth}){
     if(!session)return openAuth();
     setJoining(true);
     setMessage("");
-    const {data,error}=await supabase.rpc("join_reading_room_by_code",{p_invite_code:inviteCode.trim().toUpperCase()});
-    if(error){
+    try{
+      const room=await joinReadingRoom(inviteCode);
+      setInviteCode("");
+      setMessage("읽기방에 입장했어요!");
+      setActiveTab("joined");
+      await loadRooms();
+      open(room);
+    }catch(error){
       setMessage(roomError(error));
+    }finally{
       setJoining(false);
-      return;
-    }
-    setInviteCode("");
-    setMessage("읽기방에 입장했어요!");
-    setActiveTab("joined");
-    await loadRooms();
-    setJoining(false);
-    const joined=Array.isArray(data)?data[0]:data;
-    if(joined?.id){
-      const {data:room}=await supabase.from("reading_rooms").select(`*, books(${BOOK_FIELDS})`).eq("id",joined.id).single();
-      if(room)open(room);
     }
   }
 
@@ -148,7 +151,7 @@ export function Rooms({setV,open,session,openAuth}){
         minLength="6"
         maxLength="12"
         value={inviteCode}
-        onChange={event=>setInviteCode(event.target.value.replace(/[^a-z0-9]/gi,"").toUpperCase())}
+        onChange={event=>setInviteCode(normalizeInviteCode(event.target.value))}
         placeholder="초대 코드 입력"
         aria-label="읽기방 초대 코드"
       />
@@ -161,9 +164,9 @@ export function Rooms({setV,open,session,openAuth}){
       <button className={activeTab==="joined"?"active":""} onClick={()=>setActiveTab("joined")}>
         참여 중인 방 <small>{joinedRooms.length}</small>
       </button>
-      <button className={activeTab==="owned"?"active":""} onClick={()=>setActiveTab("owned")}>
+      {!isGuest&&<button className={activeTab==="owned"?"active":""} onClick={()=>setActiveTab("owned")}>
         내가 만든 방 <small>{ownedRooms.length}</small>
-      </button>
+      </button>}
     </div>
 
     {busy&&<div className="loading">읽기방 불러오는 중…</div>}
@@ -172,7 +175,7 @@ export function Rooms({setV,open,session,openAuth}){
     }
     {!busy&&visibleRooms.map(room=><RoomCard key={room.id} room={room} onOpen={open} showInvite={activeTab==="owned"} onEditBook={setEditingBook}/>)}
 
-    <button className="wide" onClick={()=>session?setV("createRoom"):openAuth()}>+ 함께 읽기방 만들기</button>
+    {!isGuest&&<button className="wide" onClick={()=>session?setV("createRoom"):openAuth()}>+ 함께 읽기방 만들기</button>}
   </>;
 }
 
@@ -218,9 +221,7 @@ export function CreateRoom({setV,session}){
   }
 
   async function copyInvite(){
-    const inviteUrl=new URL(window.location.origin);
-    inviteUrl.searchParams.set("invite",createdRoom.invite_code);
-    await navigator.clipboard.writeText(inviteUrl.toString());
+    await navigator.clipboard.writeText(guestInviteUrl(createdRoom.invite_code));
     setCopied(true);
   }
 
@@ -240,7 +241,7 @@ export function CreateRoom({setV,session}){
     <h1>함께 읽기방 만들기</h1>
     <p>같이 읽을 사람들과 새로운 LIVE 독서방을 만들어보세요.</p>
     <div className="createRoomForm">
-      <label>방 이름<input required value={name} onChange={event=>setName(event.target.value)} placeholder="예: 우리 가족 책방"/></label>
+      <label>방 이름<input required maxLength="100" value={name} onChange={event=>setName(event.target.value)} placeholder="예: 우리 가족 책방"/></label>
       <BookPicker selected={selectedBook} onSelect={setSelectedBook}/>
       <button type="button" className="wide" disabled={busy} onClick={createRoom}>{busy?"만드는 중…":"방 만들기"}</button>
     </div>

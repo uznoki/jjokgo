@@ -111,15 +111,15 @@ export default function BookPicker({selected,onSelect}){
         {manualOpen?"직접 등록 닫기":"찾는 책이 없나요? 직접 책 추가"}
       </button>
       {manualOpen&&<div className="manualBookForm">
-        <label>책 제목<input value={manual.title} onChange={event=>setManual({...manual,title:event.target.value})} placeholder="필수"/></label>
-        <label>저자<input value={manual.author} onChange={event=>setManual({...manual,author:event.target.value})} placeholder="필수"/></label>
+        <label>책 제목<input maxLength="300" value={manual.title} onChange={event=>setManual({...manual,title:event.target.value})} placeholder="필수"/></label>
+        <label>저자<input maxLength="300" value={manual.author} onChange={event=>setManual({...manual,author:event.target.value})} placeholder="필수"/></label>
         <button type="button" className="bookDetailsToggle" onClick={()=>setDetailsOpen(value=>!value)}>{detailsOpen?"상세 정보 접기":"표지·출판사·ISBN도 입력하기 (선택)"}</button>
         {detailsOpen&&<div className="manualBookDetails">
-          <label>출판사<input value={manual.publisher} onChange={event=>setManual({...manual,publisher:event.target.value})}/></label>
-          <label>출간일<input value={manual.publishedDate} onChange={event=>setManual({...manual,publishedDate:event.target.value})} placeholder="예: 2026-08-20"/></label>
-          <label>ISBN-13<input inputMode="numeric" value={manual.isbn13} onChange={event=>setManual({...manual,isbn13:event.target.value})}/></label>
-          <label>ISBN-10<input value={manual.isbn10} onChange={event=>setManual({...manual,isbn10:event.target.value})}/></label>
-          <label>표지 이미지 주소<input type="url" value={manual.coverUrl} onChange={event=>setManual({...manual,coverUrl:event.target.value})} placeholder="https://"/></label>
+          <label>출판사<input maxLength="300" value={manual.publisher} onChange={event=>setManual({...manual,publisher:event.target.value})}/></label>
+          <label>출간일<input maxLength="32" value={manual.publishedDate} onChange={event=>setManual({...manual,publishedDate:event.target.value})} placeholder="예: 2026-08-20"/></label>
+          <label>ISBN-13<input inputMode="numeric" maxLength="17" value={manual.isbn13} onChange={event=>setManual({...manual,isbn13:event.target.value})}/></label>
+          <label>ISBN-10<input maxLength="13" value={manual.isbn10} onChange={event=>setManual({...manual,isbn10:event.target.value})}/></label>
+          <label>표지 이미지 주소<input type="url" maxLength="2048" pattern="https://.*" value={manual.coverUrl} onChange={event=>setManual({...manual,coverUrl:event.target.value})} placeholder="https://"/></label>
         </div>}
         <button type="button" className="manualBookSelect" onClick={chooseManual}>이 정보로 책 선택</button>
       </div>}
