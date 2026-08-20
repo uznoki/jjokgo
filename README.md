@@ -18,6 +18,10 @@
 - 모바일 Safari/Chrome 오디오 재생 정책 대응
 - 읽기방별 고유 초대 코드와 참여자 멤버십
 - 참여 중인 방/내가 만든 방 분리
+- Open Library 기반 도서 카탈로그 검색
+- Google Books API 키 설정 시 통합 도서 검색
+- 검색 결과가 없는 책의 제목·저자 임시 등록
+- 방 소유자의 표지·출판사·ISBN 등 책 정보 보완
 
 ## 데이터베이스 마이그레이션
 
@@ -35,6 +39,20 @@ Supabase Dashboard의 SQL Editor에 파일 내용을 붙여 넣고 실행하거�
 - 신규 방 owner 멤버십 자동 생성 trigger
 - 초대 코드 입장용 `join_reading_room_by_code` RPC
 - 읽기방과 멤버십 조회 RLS 정책
+
+도서 검색, 임시 등록, 상세정보 보완 기능에는 다음 마이그레이션도 적용해야 합니다.
+
+```text
+supabase/migrations/20260820060000_book_catalog_v1.sql
+```
+
+이 마이그레이션은 기존 `books` 데이터를 삭제하지 않고 저자, 출판사, 출간일, ISBN, 표지, 데이터 출처와 작성자 필드를 추가합니다. 또한 검색 결과나 수동 입력을 중복 확인 후 저장하는 `save_catalog_book` RPC와 방 소유자의 책 정보 보완 정책을 만듭니다.
+
+기본 도서 검색은 인증키가 필요 없는 Open Library를 사용합니다. 더 폭넓은 결과를 함께 표시하려면 Google Books API에서 발급하고 웹사이트 제한을 설정한 키를 아래 환경변수로 추가하세요. 키가 없어도 기본 검색과 직접 등록은 정상 동작합니다.
+
+```text
+VITE_GOOGLE_BOOKS_API_KEY
+```
 
 ## LIVE 음성 네트워크
 
