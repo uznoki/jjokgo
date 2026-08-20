@@ -1,0 +1,151 @@
+/* 쪽GO Clay-inspired v1
+   Clay의 따뜻한 캔버스·평면 색상 카드·넉넉한 타이포를
+   LIVE 독서 제품에 맞게 절제하여 적용한다. */
+
+:root{
+  --clay-ink:#101311;
+  --clay-body:#3f433f;
+  --clay-muted:#6c706b;
+  --clay-canvas:#fffaf0;
+  --clay-soft:#faf3e4;
+  --clay-card:#f3ecd9;
+  --clay-line:#ded9ce;
+  --clay-teal:#193d35;
+  --clay-mint:#a9d7c4;
+  --clay-lavender:#bba9e8;
+  --clay-peach:#ffb58f;
+  --clay-ochre:#e8bc54;
+  --clay-coral:#f36e5d;
+  --g:var(--clay-teal);
+  --iv:var(--clay-canvas);
+  --canvas:var(--clay-canvas);
+  --paper:var(--clay-canvas);
+  --ink:var(--clay-ink);
+  --muted:var(--clay-muted);
+  --line:var(--clay-line);
+}
+
+body{background:var(--clay-soft);color:var(--clay-ink)}
+.app{background:var(--clay-canvas)}
+main{max-width:1120px}
+
+/* Typography is large and warm, while Korean body copy stays highly legible. */
+h1,h2,h3,.brand,.authBrand{font-weight:600;letter-spacing:-.055em}
+h3{font-size:23px;font-weight:600}
+.brand{color:var(--clay-ink);font-weight:800}
+.brand span,.authBrand span{color:var(--clay-teal)}
+header>button.headAccount{border-color:var(--clay-ink);background:transparent;color:var(--clay-ink);border-radius:12px}
+header>button.headAccount:hover{border-color:var(--clay-ink);background:var(--clay-ink);color:white;transform:none}
+
+/* Hero uses the original 쪽GO clay illustration as the main brand artifact. */
+.hero{min-height:440px;padding:54px 0 48px;gap:36px}
+.hero>div:first-child{flex:1 1 58%}
+.hero h1{max-width:620px;margin:14px 0 24px;color:var(--clay-ink);font-size:clamp(54px,8vw,78px);font-weight:600;line-height:.98;letter-spacing:-.075em}
+.hero p{color:var(--clay-body);font-size:18px;line-height:1.7}
+.heroEyebrow{padding:7px 13px;background:var(--clay-ochre);color:var(--clay-ink);font-weight:700;text-transform:none}
+.heroArt{flex:0 1 390px;width:min(38vw,390px);height:min(38vw,390px);border-radius:32px;background:var(--clay-soft);box-shadow:none;transform:none;overflow:visible}
+.heroArt img{width:118%;height:118%;object-fit:contain;filter:drop-shadow(0 18px 18px rgba(25,61,53,.12))}
+.heroArt small{right:8%;bottom:8%;padding:8px 14px;border:4px solid var(--clay-canvas);background:var(--clay-coral);box-shadow:none}
+
+/* Flat saturated surfaces replace decorative depth. */
+.welcome{border:0;background:var(--clay-card);box-shadow:none;border-radius:16px}
+.welcome:hover{transform:none;box-shadow:none;background:#ece4cf}
+.homeActions{grid-template-columns:1.35fr 1fr;gap:14px}
+.homeActions button{border:0;border-radius:20px;box-shadow:none!important}
+.homeActions button:hover{transform:none;filter:brightness(.98)}
+.homeActions button:active{transform:scale(.99)}
+.primaryAction{background:var(--clay-teal);box-shadow:none}
+.primaryAction .actionIcon{background:var(--clay-mint);color:var(--clay-ink)}
+.primaryAction small,.primaryAction em{color:#dbe9e3}
+.secondaryAction{background:var(--clay-lavender);color:var(--clay-ink);box-shadow:none}
+.secondaryAction>svg:first-child{color:var(--clay-ink)}
+.secondaryAction small{color:#473f59}
+.codeAction{background:var(--clay-peach);color:var(--clay-ink)}
+
+.books>div{min-height:250px;padding:18px;border:0;border-radius:24px;box-shadow:none}
+.books .color-1{background:var(--clay-lavender)}
+.books .color-2{background:var(--clay-peach)}
+.books .color-3{background:var(--clay-ochre)}
+.books>div .cover{height:145px;background:rgba(255,250,240,.58);font-size:38px}
+.books>div strong,.books>div b{color:var(--clay-ink)}
+.books .bar{background:rgba(16,19,17,.14)}
+.books .bar i{background:var(--clay-ink)}
+.card{border:0;background:var(--clay-card);box-shadow:none}
+.card:hover{transform:none;border-color:transparent;box-shadow:none;background:#eee6d2}
+.cal{border:0;background:var(--clay-soft);box-shadow:none}
+.cal .done{background:var(--clay-teal);box-shadow:none}
+.cal .doing{background:var(--clay-ochre)}
+
+/* Buttons and forms follow a simple 12px/16px radius system. */
+.wide{border-radius:12px;background:var(--clay-ink);box-shadow:none}
+.wide:hover{transform:none;filter:brightness(1.12)}
+.wide:active{transform:scale(.99);box-shadow:none}
+.auth{max-width:520px}
+.auth h1{font-size:clamp(38px,7vw,50px);font-weight:600}
+.authBrand{color:var(--clay-ink)}
+.authTabs,.roomTabs{background:var(--clay-card);border-radius:14px}
+.authTabs .active,.roomTabs button.active{background:var(--clay-canvas);box-shadow:none;color:var(--clay-ink)}
+.auth label input,.auth .createRoomForm input,.bookPicker input,.bookEditor input{border:1.5px solid var(--clay-line);border-radius:12px;background:var(--clay-canvas)}
+.auth label input:focus,.auth .createRoomForm input:focus,.bookPicker input:focus,.bookEditor input:focus{border-color:var(--clay-ink);box-shadow:none}
+.authMsg,.roomMessage{border:0;background:var(--clay-mint);color:var(--clay-ink)}
+.guestBadge{background:var(--clay-lavender);color:var(--clay-ink)}
+
+/* Room lists gain color rhythm, but retain one predictable structure. */
+.joinRoomForm{border:1.5px solid var(--clay-line);background:var(--clay-canvas);box-shadow:none}
+.joinRoomForm button{background:var(--clay-ink);box-shadow:none}
+.roomListCard{border:0;background:var(--clay-card);box-shadow:none}
+.roomListCard:nth-of-type(3n+1){background:#e5f0e9}
+.roomListCard:nth-of-type(3n+2){background:#eee7fa}
+.roomListCard:nth-of-type(3n){background:#fae6d9}
+.roomListCard:hover{transform:none;border-color:transparent;box-shadow:none;filter:brightness(.985)}
+.roomOwnerActions{background:rgba(255,250,240,.55)}
+.inviteCode,.editBookButton{border-color:rgba(16,19,17,.12)}
+.emptyRooms{border:0;background:var(--clay-soft)}
+.bookPicker{border:0;background:var(--clay-soft)}
+.bookEditor{border:0;background:#e5f0e9}
+.manualBookToggle{border:0;background:var(--clay-mint);color:var(--clay-ink)}
+.bookSearch button,.manualBookSelect{background:var(--clay-ink)}
+.bookResults{border-color:var(--clay-line);background:var(--clay-canvas)}
+.selectedBook{border:0;background:var(--clay-mint);color:var(--clay-ink)}
+
+/* LIVE deliberately stays quiet: semantic status colors, no decorative rainbow. */
+.liveRoomView .room .thumb.big{background:var(--clay-mint);border-radius:24px}
+.liveConnection{border:0;background:#e5f0e9}
+.liveConnection.connecting{background:#fff0c9}
+.liveConnection.error,.liveConnection.closed{background:#ffe4de}
+.liveRoomView>.demoNotice{background:var(--clay-card)}
+.readingPage{border:1px solid var(--clay-line);background:var(--clay-canvas);box-shadow:none}
+.pageNumber{color:var(--clay-ink)}
+.reader{border:0;background:var(--clay-soft)}
+.reader.live{background:var(--clay-mint);box-shadow:none}
+.reader.muted{background:var(--clay-card)}
+.readingActions .secondary{border:0;background:var(--clay-card)}
+.liveButton{background:var(--clay-ink)}
+.liveButton.live{background:var(--clay-coral)}
+.liveButton.muted{background:var(--clay-teal)}
+.liveHelp{border:0;background:var(--clay-soft)}
+.liveHelp.live{border:0;background:#e5f0e9;color:var(--clay-teal)}
+
+/* Navigation stays familiar; the central LIVE control becomes a clay tile. */
+nav{border-color:var(--clay-line);background:rgba(255,250,240,.95)}
+nav button.active{background:var(--clay-card);color:var(--clay-ink)}
+nav .mic{border-color:var(--clay-canvas);background:var(--clay-teal);box-shadow:none;border-radius:20px}
+nav .mic.active{background:var(--clay-coral)}
+
+@media (max-width:699px){
+  .hero{min-height:390px;padding:34px 0 40px;align-items:center;gap:4px}
+  .hero>div:first-child{flex:1 1 66%}
+  .hero h1{font-size:clamp(46px,13vw,60px);line-height:1}
+  .hero p{font-size:16px}
+  .heroArt{display:grid;width:130px;height:160px;flex:0 0 130px;border-radius:24px}
+  .heroArt img{width:112%;height:112%;margin-left:-6%}
+  .heroArt small{right:0;bottom:13%}
+  .homeActions{grid-template-columns:1fr}
+  .books>div{min-height:220px}
+  .books>div .cover{height:120px}
+}
+
+@media (max-width:380px){
+  .heroArt{display:grid;width:104px;flex-basis:104px}
+  .hero h1{font-size:44px}
+}
