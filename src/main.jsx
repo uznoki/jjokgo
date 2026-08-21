@@ -70,7 +70,9 @@ function App(){
     <div className="readingBanner"><span>JJOKGO — LIVE READING JOURNAL</span><b>ONE PAGE AT A TIME</b></div>
     <main>
       <header>
-        <button className="brand" onClick={()=>setV("home")} aria-label="쪽GO 홈으로">쪽<span>GO</span></button>
+        <button className="brand" onClick={()=>setV("home")} aria-label="쪽GO 홈으로">
+          <span className="brandJjok" aria-hidden="true">쪽</span><span className="brandGo" aria-hidden="true">GO</span>
+        </button>
         <div className="mastNav" aria-label="주요 메뉴">
           <button onClick={()=>setV("home")}>JOURNAL</button>
           <button onClick={openRooms}>LIVE ROOMS</button>
