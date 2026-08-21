@@ -85,7 +85,7 @@ function App(){
         <button className="brand" onClick={()=>setV("home")} aria-label="쪽GO 홈으로">
           <BrandWordmark/>
         </button>
-        <div className="mastNav" aria-label="주요 메뉴">
+        <div className="mastNav" data-active={v==="home"?"journal":v==="library"?"library":["modes","flow","rooms","createRoom","room","guest"].includes(v)?"rooms":"none"} aria-label="주요 메뉴">
           <button className={v==="home"?"active":""} aria-current={v==="home"?"page":undefined} onClick={()=>setV("home")}>JOURNAL</button>
           <button className={["modes","flow","rooms","createRoom","room","guest"].includes(v)?"active":""} aria-current={["modes","flow","rooms","createRoom","room","guest"].includes(v)?"page":undefined} onClick={openModes}>LIVE ROOMS</button>
           <button className={v==="library"?"active":""} aria-current={v==="library"?"page":undefined} onClick={openLibrary}>LIBRARY</button>

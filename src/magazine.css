@@ -35,8 +35,8 @@ header{height:78px;border-bottom:1px solid var(--mag-black);display:grid;grid-te
 .brandWordmark{display:inline-flex;align-items:center}
 .brandImage{display:block;width:65px;height:auto;mix-blend-mode:multiply}
 .desktopHeroMark,.desktopHeroActions,.desktopScrollCue,.desktopFooter{display:none}
-.mastNav{display:flex;align-items:center;gap:28px}
-.mastNav button{padding:8px 0;border:0;background:transparent;color:var(--mag-black);font-size:11px;font-weight:700;letter-spacing:.055em}
+.mastNav{--indicator-left:0px;--indicator-width:64px;position:relative;display:grid;grid-template-columns:64px 92px 66px;align-items:center;gap:18px}
+.mastNav button{width:100%;padding:8px 0;border:0;background:transparent;color:var(--mag-black);font-size:11px;font-weight:700;letter-spacing:.055em;text-align:center}
 .mastNav button:hover{text-decoration:none}
 .mastNav button:disabled{opacity:.35}
 header>button.headAccount{min-height:auto;padding:7px 0;border:0;border-radius:0;background:transparent;color:var(--mag-black);font-size:11px;font-weight:700;box-shadow:none}
@@ -361,7 +361,7 @@ nav .mic.active{background:var(--mag-live)}
 
 /* Editorial book selection */
 .recommendedBooks{margin-top:54px}.recommendedBooks .sectionHeading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:14px}.recommendedBooks .sectionHeading h3{margin:0}.recommendedBooks .sectionHeading small{padding-bottom:4px;font-size:9px;font-weight:700;letter-spacing:.14em;color:var(--mag-muted)}
-.mastNav button{position:relative}.mastNav button:after{content:"";position:absolute;left:0;right:0;bottom:-9px;height:2px;background:var(--mag-live);transform:scaleX(0);transform-origin:left;transition:transform .18s ease}.mastNav button:hover:after,.mastNav button.active:after{transform:scaleX(1)}.mastNav button.active{color:var(--mag-live)}
+.mastNav:after{content:"";position:absolute;left:var(--indicator-left);bottom:-1px;width:var(--indicator-width);height:2px;background:var(--mag-live);opacity:1;transition:left .24s ease,width .24s ease,opacity .16s ease}.mastNav[data-active="rooms"]{--indicator-left:82px;--indicator-width:92px}.mastNav[data-active="library"]{--indicator-left:192px;--indicator-width:66px}.mastNav[data-active="none"]:after{opacity:0}.mastNav button:hover,.mastNav button.active{color:var(--mag-live)}
 .books>button{min-width:125px;padding:18px;border:0;border-right:1px solid var(--mag-line);border-bottom:1px solid var(--mag-line);border-radius:0;background:transparent;box-shadow:none;display:flex;flex-direction:column;gap:7px;text-align:left;color:inherit;font:inherit;cursor:pointer}.books>button:nth-child(2){background:transparent}.books>button:nth-child(3){background:transparent}.books>button:nth-child(2) .cover{background:var(--mag-live);color:white}.books>button:nth-child(3) .cover{background:var(--mag-black);color:white}.books>button>b{font-size:13px;font-weight:500}.books>button>strong{font-size:11px;color:var(--mag-live)}.books>button:focus-visible{outline:3px solid var(--mag-live);outline-offset:-3px}
 @media (max-width:699px){.recommendedBooks{margin-top:46px}.recommendedBooks .sectionHeading{align-items:flex-start;flex-direction:column;gap:4px}.books>button{min-width:70vw}.books>button .cover{height:220px}}
 @media (min-width:700px){.books>button{min-width:0}}
@@ -376,7 +376,7 @@ nav .mic.active{background:var(--mag-live)}
   main{max-width:1320px;margin:0 auto;padding:0 56px 84px}
   header{height:92px;border-bottom:0;grid-template-columns:1fr auto auto;gap:42px}
   .brandImage{width:78px}
-  .mastNav{justify-self:end;gap:31px}
+  .mastNav{justify-self:end}
   .mastNav button{font-size:10px;letter-spacing:.08em}
   header>button.headAccount{min-height:38px;padding:0 17px;border:1px solid var(--mag-black);border-radius:999px}
   header>button.headAccount:hover{border:1px solid var(--mag-black);background:var(--mag-black);color:white;text-decoration:none}
