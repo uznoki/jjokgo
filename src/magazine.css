@@ -389,8 +389,6 @@ nav .mic.active{background:var(--mag-live)}
   .view-home .hero:before{width:280px;height:280px;left:-105px;bottom:11%;background:var(--mag-lime)}
   .view-home .hero:after{width:150px;height:150px;right:2%;top:10%;border:22px solid var(--mag-live);background:transparent}
   .view-home .hero>div:first-child{width:min(940px,82vw);display:flex;flex-direction:column;align-items:center}
-  .desktopHeroMark{display:block;margin-bottom:34px}
-  .desktopHeroMark .brandImage{width:128px}
   .view-home .heroEyebrow{font-size:10px;letter-spacing:.18em}
   .view-home .hero h1{margin:22px 0 28px;font-size:clamp(92px,10.5vw,164px);font-weight:500;line-height:.88;letter-spacing:-.095em}
   .view-home .hero p{margin:0;font-size:17px;line-height:1.8}
