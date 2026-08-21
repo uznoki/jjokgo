@@ -57,13 +57,13 @@ export function ReadingModes({onBack,onFlow,onPage}){
     <div className="modeGrid">
       <button className="modeCard flow" onClick={onFlow}>
         <span className="modeIndex">01</span><span className="modeLabel">쪽GO FLOW</span>
-        <strong>문장을 따라,<br/>리듬을 함께.</strong>
+        <strong>화면에 흐르는<br/>문장을 따라.</strong>
         <p>공개가 허용된 원문이 화면에 흐릅니다. 속도에 맞춰 읽고, 여럿이 릴레이로 낭독할 수 있는 형식이에요.</p>
         <span className="modeMeta"><Play/> 화면 스크립트 · LIVE 음성</span><ChevronRight/>
       </button>
       <button className="modeCard page" onClick={onPage}>
         <span className="modeIndex">02</span><span className="modeLabel">쪽GO PAGE</span>
-        <strong>각자의 책으로,<br/>목소리는 함께.</strong>
+        <strong>각자의 책으로,<br/>따로 또 같이.</strong>
         <p>참여자가 같은 책을 각자 준비합니다. 실시간 음성과 페이지를 나누는 지금의 LIVE 독서방이에요.</p>
         <span className="modeMeta"><BookOpen/> 실물책 · LIVE 음성</span><ChevronRight/>
       </button>
