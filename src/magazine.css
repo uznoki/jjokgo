@@ -1,0 +1,163 @@
+/* 쪽GO Magazine Editorial v1
+   얇은 규칙선, 절제된 무채색, 큰 제목과 작은 메타 정보의 대비로
+   LIVE 독서 경험을 현대적인 문화 매거진처럼 구성한다. */
+
+:root{
+  --mag-black:#111210;
+  --mag-ink:#181916;
+  --mag-muted:#686963;
+  --mag-paper:#f7f6f1;
+  --mag-white:#fff;
+  --mag-line:#c9c8c1;
+  --mag-live:#e4573d;
+  --mag-blue:#c9d7e4;
+  --mag-lime:#d7df8a;
+  --g:var(--mag-black);
+  --iv:var(--mag-paper);
+  --canvas:var(--mag-paper);
+  --paper:var(--mag-white);
+  --ink:var(--mag-ink);
+  --line:var(--mag-line);
+}
+
+body{background:#deded9;color:var(--mag-ink)}
+.app{max-width:1440px;background:var(--mag-paper);box-shadow:none}
+main{max-width:1320px;padding-left:40px;padding-right:40px}
+button{letter-spacing:-.015em}
+
+.readingBanner{height:30px;padding:0 40px;border-bottom:1px solid #2e302c;background:var(--mag-black);color:#fff;display:flex;align-items:center;justify-content:space-between;font-size:9px;font-weight:700;letter-spacing:.12em}
+.readingBanner b{color:#fff;font-size:9px;font-weight:500;letter-spacing:.12em}
+header{height:78px;border-bottom:1px solid var(--mag-black);display:grid;grid-template-columns:auto 1fr auto;gap:44px}
+.brand{color:var(--mag-black);font-size:27px;font-weight:900;letter-spacing:-.075em}
+.brand span,.authBrand span{color:var(--mag-live)}
+.mastNav{display:flex;align-items:center;gap:28px}
+.mastNav button{padding:8px 0;border:0;background:transparent;color:var(--mag-black);font-size:11px;font-weight:700;letter-spacing:.055em}
+.mastNav button:hover{text-decoration:underline;text-underline-offset:5px}
+.mastNav button:disabled{opacity:.35}
+header>button.headAccount{min-height:auto;padding:7px 0;border:0;border-radius:0;background:transparent;color:var(--mag-black);font-size:11px;font-weight:700;box-shadow:none}
+header>button.headAccount:hover{transform:none;border:0;background:transparent;text-decoration:underline;text-underline-offset:5px}
+header>button.headAccount svg{width:15px}
+
+h1,h2,h3,.auth h1{font-weight:500;letter-spacing:-.055em}
+h3{margin:68px 0 24px;padding-top:12px;border-top:1px solid var(--mag-black);font-size:14px;font-weight:700;letter-spacing:-.025em}
+h3:after{content:"  /  EDITOR'S SELECTION";float:right;color:var(--mag-muted);font-size:9px;font-weight:500;letter-spacing:.1em}
+.back{border-radius:0;color:var(--mag-ink);font-size:12px;font-weight:600;text-decoration:underline;text-underline-offset:4px}
+
+.hero{min-height:520px;height:auto;margin:0;padding:56px 0;border-bottom:1px solid var(--mag-black);border-radius:0;background:transparent;gap:70px}
+.hero>div:first-child{flex:1 1 52%}
+.hero h1{margin:24px 0 30px;color:var(--mag-black);font-size:clamp(64px,8vw,112px);font-weight:500;line-height:.86;letter-spacing:-.085em}
+.hero p{color:var(--mag-ink);font-size:15px;font-weight:400;line-height:1.7}
+.heroEyebrow{padding:0;border-radius:0;background:transparent;color:var(--mag-ink);font-size:10px;font-weight:700;letter-spacing:.12em}
+.heroArt{flex:0 0 min(44vw,520px);width:min(44vw,520px);height:380px;display:grid;place-items:stretch;grid-template-columns:1.6fr 1fr;grid-template-rows:1fr 1fr;gap:0;border:1px solid var(--mag-black);border-radius:0;background:var(--mag-white);box-shadow:none;transform:none;font-size:initial!important}
+.editorialTile{position:relative;overflow:hidden;padding:22px;border:0;border-radius:0;background:var(--mag-white);color:var(--mag-black);display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;box-shadow:none}
+.editorialTile small,.editorialTile span{position:static;right:auto;bottom:auto;padding:0;border:0;border-radius:0;background:transparent;color:inherit;font-size:9px;font-weight:700;letter-spacing:.11em;transform:none}
+.editorialTile b{font-size:21px;font-weight:500;line-height:1.08;letter-spacing:-.05em}
+.tileMain{grid-row:1/-1;padding:28px;border-right:1px solid var(--mag-black);background:var(--mag-black);color:white}
+.tileMain:before{content:"JJOKGO";position:absolute;right:-13px;top:9px;color:#292b27;font-size:66px;font-weight:900;letter-spacing:-.08em;transform:rotate(90deg);transform-origin:right top}
+.tileMain>*{position:relative;z-index:1}
+.tileMain b{font-size:34px}
+.tileMain svg{position:absolute;right:26px;bottom:28px;width:26px;height:26px;color:var(--mag-live)}
+.tilePage{border-bottom:1px solid var(--mag-black);background:var(--mag-blue)}
+.tilePeople{background:var(--mag-lime)}
+
+.welcome{min-height:66px;margin:18px 0 0;padding:14px 0;border:0;border-bottom:1px solid var(--mag-line);border-radius:0;background:transparent;box-shadow:none}
+.welcome:hover{transform:none;box-shadow:none;background:transparent;border-color:var(--mag-black)}
+.homeActions{margin-top:20px;grid-template-columns:1.4fr 1fr;gap:0;border:1px solid var(--mag-black)}
+.homeActions button{border-radius:0;box-shadow:none!important;transform:none!important}
+.primaryAction{min-height:150px;border:0;border-right:1px solid var(--mag-black);background:var(--mag-black)}
+.primaryAction .actionIcon{border:1px solid #666;border-radius:50%;background:transparent}
+.primaryAction small,.primaryAction em{color:#aaa}
+.secondaryAction{min-height:94px;border:0;border-bottom:1px solid var(--mag-black);background:var(--mag-white);box-shadow:none}
+.secondaryAction>svg:first-child{color:var(--mag-black)}
+.codeAction{min-height:55px;border:0;background:var(--mag-lime);color:var(--mag-black)}
+
+.books{gap:0;border-top:1px solid var(--mag-line);border-left:1px solid var(--mag-line)}
+.books>div{padding:18px;border:0;border-right:1px solid var(--mag-line);border-bottom:1px solid var(--mag-line);border-radius:0;background:transparent;box-shadow:none}
+.books>div:nth-child(2),.books>div:nth-child(3){background:transparent}
+.books .cover{height:230px;padding:18px;border-radius:0;background:#d9d4c8;color:var(--mag-black);display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;text-align:left;font-size:initial}
+.books>div:nth-child(2) .cover{background:var(--mag-live);color:white}
+.books>div:nth-child(3) .cover{background:var(--mag-black);color:white}
+.cover small{font-size:8px;font-weight:700;letter-spacing:.12em}
+.cover span{max-width:85%;font-size:clamp(25px,3vw,40px);font-weight:500;line-height:.94;letter-spacing:-.075em}
+.cover i{align-self:flex-end;font-size:12px;font-style:normal}
+.books>div>b{font-size:13px;font-weight:500}
+.books>div>strong{font-size:11px}
+.bar{height:2px;border-radius:0;background:#d9d8d2}
+.bar i{background:var(--mag-live)}
+.card{min-height:92px;border:0;border-top:1px solid var(--mag-black);border-bottom:1px solid var(--mag-black);border-radius:0;background:transparent;box-shadow:none}
+.card:hover{transform:none;border-color:var(--mag-black);box-shadow:none;background:#efeee9}
+.card .thumb{border-radius:0;background:var(--mag-blue)}
+.cal{padding:20px 0;border:0;border-top:1px solid var(--mag-black);border-bottom:1px solid var(--mag-black);border-radius:0;background:transparent}
+.cal .done{border-radius:0;background:var(--mag-black);box-shadow:none}
+.cal .doing{border-radius:0;background:var(--mag-live)}
+
+.auth{max-width:520px}
+.authBrand{color:var(--mag-black);font-size:30px;font-weight:900}
+.authTabs,.roomTabs{padding:0;border:1px solid var(--mag-black);border-radius:0;background:transparent}
+.authTabs button,.roomTabs button{border-radius:0}
+.authTabs .active,.roomTabs button.active{background:var(--mag-black);color:white;box-shadow:none}
+.auth label input,.auth .createRoomForm input,.bookPicker input,.bookEditor input{border:0;border-bottom:1px solid var(--mag-black);border-radius:0;background:transparent}
+.auth label input:focus,.auth .createRoomForm input:focus,.bookPicker input:focus,.bookEditor input:focus{border-color:var(--mag-live);box-shadow:none}
+.wide{border-radius:0;background:var(--mag-black);box-shadow:none}
+.wide:hover{transform:none;filter:none;background:#30312d}
+.wide:active{transform:none;box-shadow:none}
+.authMsg,.roomMessage{border:1px solid var(--mag-black);border-radius:0;background:var(--mag-blue);color:var(--mag-black)}
+.guestBadge{border-radius:0;background:var(--mag-lime)}
+
+.joinRoomForm{border:0;border-bottom:1px solid var(--mag-black);border-radius:0;background:transparent;box-shadow:none}
+.joinRoomForm button{border-radius:0;background:var(--mag-black);box-shadow:none}
+.roomListCard{border:0;border-bottom:1px solid var(--mag-black);border-radius:0;background:transparent;box-shadow:none}
+.roomListCard:hover{transform:none;border-color:var(--mag-black);box-shadow:none;background:#efeee9}
+.roomCardOpen .thumb{border-radius:0;background:var(--mag-blue)}
+.roomOwnerActions{background:#ecebe5}
+.emptyRooms{border:1px solid var(--mag-line);border-radius:0;background:transparent}
+.bookPicker,.bookEditor,.bookSearch,.bookResults{border:1px solid var(--mag-line);border-radius:0;background:var(--mag-white)}
+.manualBookToggle,.selectedBook{border:1px solid var(--mag-black);border-radius:0;background:var(--mag-lime);color:var(--mag-black)}
+
+.liveRoomView .room{padding:24px 0;border-top:1px solid var(--mag-black);border-bottom:1px solid var(--mag-black);background:transparent;color:var(--mag-black)}
+.liveRoomView .room .thumb.big{border-radius:0;background:var(--mag-blue);box-shadow:none}
+.liveConnection{border:1px solid var(--mag-line);border-radius:0;background:var(--mag-white)}
+.liveConnection.connecting{background:var(--mag-lime)}
+.liveConnection.error,.liveConnection.closed{background:#f5d5ce}
+.readingPage{border:1px solid var(--mag-line);border-radius:0;background:var(--mag-white);box-shadow:none}
+.reader{border:1px solid var(--mag-line);border-radius:0;background:var(--mag-white);box-shadow:none}
+.reader.live{border-color:var(--mag-black);background:var(--mag-lime);box-shadow:none}
+.reader.muted{background:#e9e8e2}
+.readingActions .secondary{border:1px solid var(--mag-black);border-radius:0;background:transparent;color:var(--mag-black)}
+.liveButton.live{background:var(--mag-live)}
+.liveButton.muted{background:var(--mag-black)}
+.liveHelp{border:1px solid var(--mag-line);border-radius:0;background:transparent}
+
+nav{border-top:1px solid var(--mag-black);background:rgba(247,246,241,.97)}
+nav button{border-radius:0}
+nav button.active{border-bottom:2px solid var(--mag-black);background:transparent;color:var(--mag-black)}
+nav .mic{border:1px solid var(--mag-black);border-radius:50%;background:var(--mag-black);box-shadow:none;transform:none}
+nav .mic svg,nav .mic small{transform:none}
+nav .mic:active{transform:scale(.98);box-shadow:none}
+nav .mic.active{background:var(--mag-live)}
+
+@media (max-width:699px){
+  .readingBanner{padding:0 16px}
+  .readingBanner b{display:none}
+  main{padding-left:18px;padding-right:18px}
+  header{height:68px;grid-template-columns:1fr auto}
+  .mastNav{display:none}
+  .hero{min-height:auto;margin:0;padding:34px 0 30px;display:grid;grid-template-columns:1fr;gap:34px}
+  .hero h1{font-size:clamp(58px,17vw,76px)}
+  .hero p{font-size:14px}
+  .heroArt{width:100%;height:280px;flex:auto;grid-template-columns:1.45fr 1fr;white-space:normal}
+  .tileMain{padding:22px}
+  .tileMain b{font-size:27px}
+  .homeActions{grid-template-columns:1fr}
+  .primaryAction{min-height:126px;border-right:0;border-bottom:1px solid var(--mag-black)}
+  .books>div{min-width:70vw}
+  .books .cover{height:220px}
+  h3{margin-top:54px}
+  h3:after{display:none}
+}
+
+@media (min-width:700px){
+  .app{max-width:1440px}
+  nav{max-width:1440px}
+  .books{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
