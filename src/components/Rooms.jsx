@@ -1,5 +1,5 @@
 import {useCallback,useEffect,useState} from "react";
-import {BookOpen,ChevronRight,Copy,Lock,Pencil,Users} from "lucide-react";
+import {BookOpen,ChevronRight,Copy,Lock,Pencil,Trash2,Users} from "lucide-react";
 import {supabase} from "../supabase";
 import {BOOK_FIELDS,guestInviteUrl,joinReadingRoom,normalizeInviteCode} from "../services/readingRooms";
 import BookPicker from "./BookPicker";
@@ -27,7 +27,7 @@ function roomError(error){
   return message||"읽기방 정보를 불러오지 못했어요.";
 }
 
-function RoomCard({room,onOpen,showInvite=false,onEditBook,onEditName}){
+function RoomCard({room,onOpen,showInvite=false,onEditBook,onEditName,onDelete}){
   const [copied,setCopied]=useState(false);
   async function copyCode(){
     if(!room.invite_code)return;
@@ -48,8 +48,31 @@ function RoomCard({room,onOpen,showInvite=false,onEditBook,onEditName}){
       <button className="editRoomButton" onClick={()=>onEditName(room)}><Pencil/> 방 이름 수정</button>
       {room.invite_code&&<button className="inviteCode" onClick={copyCode} aria-label="게스트 초대 링크 복사"><Copy/> {copied?"링크 복사됨":room.invite_code}</button>}
       {room.books&&<button className="editBookButton" onClick={()=>onEditBook(room.books)}><Pencil/> 책 정보 보완</button>}
+      <button className="deleteRoomButton" onClick={()=>onDelete(room)}><Trash2/> 방 삭제</button>
     </div>}
   </div>;
+}
+
+function RoomDeleteConfirm({room,onClose,onDeleted}){
+  const [deleting,setDeleting]=useState(false);
+  const [message,setMessage]=useState("");
+
+  async function removeRoom(){
+    setDeleting(true);
+    setMessage("");
+    const {error}=await supabase.rpc("delete_reading_room",{p_room_id:String(room.id)});
+    if(error){setMessage(roomError(error));setDeleting(false);return;}
+    await onDeleted();
+    setDeleting(false);
+    onClose();
+  }
+
+  return <section className="roomDeleteConfirm" role="alertdialog" aria-labelledby="room-delete-title" aria-describedby="room-delete-description">
+    <Trash2/>
+    <div><b id="room-delete-title">‘{room.name}’ 방을 삭제할까요?</b><p id="room-delete-description">참여자들은 더 이상 이 방과 초대 링크에 접근할 수 없습니다. 책 정보는 카탈로그에 남지만, 방은 복구할 수 없어요.</p></div>
+    <div className="roomDeleteActions"><button type="button" onClick={onClose} disabled={deleting}>취소</button><button type="button" onClick={removeRoom} disabled={deleting}>{deleting?"삭제 중…":"방 삭제 확인"}</button></div>
+    {message&&<p className="roomDeleteMessage" role="status">{message}</p>}
+  </section>;
 }
 
 function RoomNameEditor({room,onClose,onSaved}){
@@ -137,6 +160,7 @@ export function Rooms({setV,open,session,openAuth}){
   const [message,setMessage]=useState("");
   const [editingBook,setEditingBook]=useState(null);
   const [editingRoom,setEditingRoom]=useState(null);
+  const [deletingRoom,setDeletingRoom]=useState(null);
 
   const loadRooms=useCallback(async()=>{
     if(!session){setBusy(false);return;}
@@ -195,6 +219,7 @@ export function Rooms({setV,open,session,openAuth}){
       <button disabled={joining}>{joining?"입장 중…":"방 입장"}</button>
     </form>
     {message&&<div className="roomMessage" role="status">{message}</div>}
+    {deletingRoom&&<RoomDeleteConfirm room={deletingRoom} onClose={()=>setDeletingRoom(null)} onDeleted={loadRooms}/>}
     {editingRoom&&<RoomNameEditor room={editingRoom} onClose={()=>setEditingRoom(null)} onSaved={loadRooms}/>}
     {editingBook&&<BookMetadataEditor book={editingBook} onClose={()=>setEditingBook(null)} onSaved={loadRooms}/>}
 
@@ -211,7 +236,7 @@ export function Rooms({setV,open,session,openAuth}){
     {!busy&&visibleRooms.length===0&&
       <div className="emptyRooms"><Users/><b>{activeTab==="joined"?"아직 참여 중인 방이 없어요":"아직 만든 읽기방이 없어요"}</b><small>{activeTab==="joined"?"초대 코드를 입력해 함께 읽어보세요.":"새 읽기방을 만들고 사람들을 초대해보세요."}</small></div>
     }
-    {!busy&&visibleRooms.map(room=><RoomCard key={room.id} room={room} onOpen={open} showInvite={activeTab==="owned"} onEditBook={book=>{setEditingRoom(null);setEditingBook(book)}} onEditName={selectedRoom=>{setEditingBook(null);setEditingRoom(selectedRoom)}}/>)}
+    {!busy&&visibleRooms.map(room=><RoomCard key={room.id} room={room} onOpen={open} showInvite={activeTab==="owned"} onEditBook={book=>{setEditingRoom(null);setDeletingRoom(null);setEditingBook(book)}} onEditName={selectedRoom=>{setEditingBook(null);setDeletingRoom(null);setEditingRoom(selectedRoom)}} onDelete={selectedRoom=>{setEditingBook(null);setEditingRoom(null);setDeletingRoom(selectedRoom)}}/>)}
 
     {!isGuest&&<button className="wide" onClick={()=>session?setV("createRoom"):openAuth()}>+ PAGE 읽기방 만들기</button>}
   </>;
