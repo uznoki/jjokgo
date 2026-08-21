@@ -132,9 +132,10 @@ export function useLiveKitRoom({roomId,session,initialPage=17,onRemotePage,enabl
       setMessage(microphoneMessage(error));
     };
 
+    const isPublicFlowRoom=String(roomId).startsWith("flow-");
     const pageChannel=supabase.channel(`livekit-page-${roomId}`,{
       config:{
-        private:true,
+        private:!isPublicFlowRoom,
         broadcast:{self:false,ack:true},
         presence:{key:pagePeerIdRef.current}
       }

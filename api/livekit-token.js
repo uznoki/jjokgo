@@ -3,6 +3,7 @@ import {AccessToken,TrackSource} from "livekit-server-sdk";
 
 const SAFE_ID=/^[a-zA-Z0-9_-]+$/;
 const MAX_ID_LENGTH=128;
+const PUBLIC_FLOW_ROOMS=new Set(["flow-g905-9002094"]);
 
 function json(response,status,body){
   response.status(status).setHeader("Content-Type","application/json");
@@ -43,13 +44,15 @@ export default async function handler(request,response){
   const {data:userData,error:userError}=await supabase.auth.getUser(accessToken);
   if(userError||!userData.user)return json(response,401,{error:"INVALID_SESSION"});
 
-  const {data:membership,error:membershipError}=await supabase
-    .from("reading_room_members")
-    .select("room_id")
-    .eq("room_id",roomId)
-    .eq("user_id",userData.user.id)
-    .maybeSingle();
-  if(membershipError||!membership)return json(response,403,{error:"ROOM_ACCESS_DENIED"});
+  if(!PUBLIC_FLOW_ROOMS.has(roomId)){
+    const {data:membership,error:membershipError}=await supabase
+      .from("reading_room_members")
+      .select("room_id")
+      .eq("room_id",roomId)
+      .eq("user_id",userData.user.id)
+      .maybeSingle();
+    if(membershipError||!membership)return json(response,403,{error:"ROOM_ACCESS_DENIED"});
+  }
 
   const nickname=String(userData.user.user_metadata?.nickname||userData.user.email?.split("@")[0]||"쪽GO 참여자").slice(0,80);
   const token=new AccessToken(livekitApiKey,livekitApiSecret,{

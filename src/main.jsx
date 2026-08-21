@@ -19,6 +19,13 @@ function inviteFromUrl(){
   return normalizeInviteCode(new URLSearchParams(window.location.search).get("invite"));
 }
 
+function initialView(inviteCode){
+  const flowCode=new URLSearchParams(window.location.search).get("flow");
+  if(inviteCode)return "guest";
+  if(flowCode==="G9059002094")return "flow";
+  return "home";
+}
+
 function clearInviteFromUrl(){
   const url=new URL(window.location.href);
   url.searchParams.delete("invite");
@@ -27,7 +34,7 @@ function clearInviteFromUrl(){
 
 function App(){
   const [inviteCode]=useState(inviteFromUrl);
-  const [v,setV]=useState(inviteCode?"guest":"home");
+  const [v,setV]=useState(()=>initialView(inviteCode));
   const [room,setRoom]=useState(null);
   const [session,setSession]=useState(null);
   const [loading,setLoading]=useState(true);
@@ -92,7 +99,7 @@ function App(){
         {v==="guest"&&inviteCode&&<GuestJoin inviteCode={inviteCode} session={session} onJoined={finishGuest} onCancel={cancelGuest}/>}
         {v==="home"&&<HomeP setV={setV} session={session} openAuth={openAuth}/>}
         {v==="modes"&&<ReadingModes onBack={()=>setV("home")} onFlow={()=>setV("flow")} onPage={openRooms}/>}
-        {v==="flow"&&<FlowReader onBack={openModes}/>}
+        {v==="flow"&&<FlowReader session={session} onBack={openModes}/>}
         {v==="createRoom"&&!isGuest&&<CreateRoom setV={setV} session={session}/>}
         {v==="rooms"&&<Rooms setV={setV} open={openRoom} session={session} openAuth={openAuth}/>}
         {v==="room"&&<LiveRoom room={room} setView={setV} session={session}/>}

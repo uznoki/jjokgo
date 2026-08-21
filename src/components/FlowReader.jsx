@@ -1,5 +1,8 @@
-import {useEffect,useRef,useState} from "react";
-import {BookOpen,ChevronRight,Pause,Play,RotateCcw,ShieldCheck} from "lucide-react";
+import {useCallback,useEffect,useRef,useState} from "react";
+import {BookOpen,ChevronRight,Copy,Mic,Pause,Play,RotateCcw,ShieldCheck,UserRound,Users,Volume2} from "lucide-react";
+import {supabase} from "../supabase";
+import {useLiveKitRoom} from "../hooks/useLiveKitRoom";
+import {RemoteAudio} from "./RemoteAudio";
 
 const FLOW_LINES=[
   "새침하게 흐린 품이 눈이 올 듯하더니 눈은 아니 오고 얼다가 만 비가 추적추적 내리었다.",
@@ -16,6 +19,31 @@ const FLOW_LINES=[
 
 const SPEEDS={slow:{label:"천천히",delay:7200},normal:{label:"보통",delay:5200},fast:{label:"빠르게",delay:3600}};
 const SOURCE_URL="https://gongu.copyright.or.kr/gongu/wrt/wrt/view.do?menuNo=200019&wrtSn=9002094";
+const FLOW_ROOM_ID="flow-g905-9002094";
+
+function normalizeSpeech(value){return String(value||"").replace(/[^0-9a-zA-Z가-힣]/g,"")}
+
+function speechProgress(transcript,line){
+  const heard=normalizeSpeech(transcript);
+  const target=normalizeSpeech(line);
+  if(!heard||!target)return 0;
+  let heardIndex=0;
+  let matched=0;
+  for(const character of target){
+    const found=heard.indexOf(character,heardIndex);
+    if(found<0)continue;
+    heardIndex=found+1;
+    matched+=1;
+  }
+  return Math.min(1,matched/target.length);
+}
+
+function flowGuestError(error){
+  const message=String(error?.message||"").toLowerCase();
+  if(message.includes("anonymous sign-ins are disabled"))return "게스트 입장이 아직 열리지 않았어요.";
+  if(message.includes("rate limit"))return "접속 요청이 잠시 많아요. 잠시 후 다시 시도해주세요.";
+  return "FLOW LIVE에 입장하지 못했어요. 잠시 후 다시 시도해주세요.";
+}
 
 export function ReadingModes({onBack,onFlow,onPage}){
   return <section className="readingModesPage">
@@ -26,7 +54,7 @@ export function ReadingModes({onBack,onFlow,onPage}){
         <span className="modeIndex">01</span><span className="modeLabel">쪽GO FLOW</span>
         <strong>문장을 따라,<br/>리듬을 함께.</strong>
         <p>공개가 허용된 원문이 화면에 흐릅니다. 속도에 맞춰 읽고, 여럿이 릴레이로 낭독할 수 있는 형식이에요.</p>
-        <span className="modeMeta"><Play/> 화면 스크립트 · 속도 조절</span><ChevronRight/>
+        <span className="modeMeta"><Play/> 화면 스크립트 · LIVE 음성</span><ChevronRight/>
       </button>
       <button className="modeCard page" onClick={onPage}>
         <span className="modeIndex">02</span><span className="modeLabel">쪽GO PAGE</span>
@@ -39,46 +67,148 @@ export function ReadingModes({onBack,onFlow,onPage}){
   </section>;
 }
 
-export function FlowReader({onBack}){
+export function FlowReader({session,onBack}){
   const[index,setIndex]=useState(0);
   const[playing,setPlaying]=useState(false);
   const[speed,setSpeed]=useState("normal");
+  const[highlightedCount,setHighlightedCount]=useState(0);
+  const[nickname,setNickname]=useState("");
+  const[joining,setJoining]=useState(false);
+  const[joinMessage,setJoinMessage]=useState("");
+  const[copied,setCopied]=useState(false);
+  const[blockedAudioIds,setBlockedAudioIds]=useState([]);
   const timerRef=useRef(null);
+  const recognitionRef=useRef(null);
+  const audioElementsRef=useRef(new Map());
+  const lineRef=useRef(FLOW_LINES[0]);
+  const indexRef=useRef(0);
+  const liveKitEnabled=import.meta.env.VITE_LIVEKIT_ENABLED==="true";
+  const SpeechRecognition=typeof window!=="undefined"&&(window.SpeechRecognition||window.webkitSpeechRecognition);
+
+  const onRemoteLine=useCallback(next=>{
+    const nextIndex=Math.max(0,Math.min(FLOW_LINES.length-1,(Number(next)||1)-1));
+    indexRef.current=nextIndex;
+    lineRef.current=FLOW_LINES[nextIndex];
+    setIndex(nextIndex);
+    setHighlightedCount(0);
+    setPlaying(false);
+  },[]);
+  const live=useLiveKitRoom({roomId:FLOW_ROOM_ID,session,initialPage:1,onRemotePage:onRemoteLine,enabled:liveKitEnabled&&Boolean(session)});
+
+  const updateLine=useCallback(nextIndex=>{
+    const safeIndex=Math.max(0,Math.min(FLOW_LINES.length-1,nextIndex));
+    indexRef.current=safeIndex;
+    lineRef.current=FLOW_LINES[safeIndex];
+    setIndex(safeIndex);
+    setHighlightedCount(0);
+    live.broadcastPage(safeIndex+1);
+  },[live.broadcastPage]);
 
   useEffect(()=>{
     window.clearTimeout(timerRef.current);
     if(!playing)return undefined;
+    const characters=Array.from(FLOW_LINES[index]);
+    if(highlightedCount<characters.length){
+      timerRef.current=window.setTimeout(()=>setHighlightedCount(current=>Math.min(characters.length,current+1)),Math.max(34,SPEEDS[speed].delay/characters.length));
+      return()=>window.clearTimeout(timerRef.current);
+    }
     timerRef.current=window.setTimeout(()=>{
-      if(index>=FLOW_LINES.length-1){setPlaying(false);return;}
-      setIndex(current=>current+1);
-    },SPEEDS[speed].delay);
+      if(index>=FLOW_LINES.length-1){
+        setPlaying(false);
+        if(live.micState==="live")live.toggleMic();
+        return;
+      }
+      updateLine(index+1);
+    },700);
     return()=>window.clearTimeout(timerRef.current);
-  },[index,playing,speed]);
+  },[highlightedCount,index,playing,speed,updateLine]);
 
-  const move=offset=>{
-    setIndex(current=>Math.max(0,Math.min(FLOW_LINES.length-1,current+offset)));
-  };
-  const restart=()=>{setIndex(0);setPlaying(false)};
+  useEffect(()=>{
+    recognitionRef.current?.stop?.();
+    recognitionRef.current=null;
+    if(!playing||!SpeechRecognition||live.micState!=="live")return undefined;
+    const recognition=new SpeechRecognition();
+    recognition.lang="ko-KR";
+    recognition.continuous=true;
+    recognition.interimResults=true;
+    recognition.onresult=event=>{
+      const transcript=Array.from(event.results).map(result=>result[0]?.transcript||"").join(" ");
+      const ratio=speechProgress(transcript,lineRef.current);
+      setHighlightedCount(current=>Math.max(current,Math.round(Array.from(lineRef.current).length*ratio)));
+    };
+    recognition.onerror=event=>{
+      if(!["aborted","no-speech"].includes(event.error))console.warn("FLOW speech following unavailable",event.error);
+    };
+    try{recognition.start();recognitionRef.current=recognition}catch(error){console.warn("FLOW speech following could not start",error)}
+    return()=>{recognition.onresult=null;recognition.onerror=null;try{recognition.stop()}catch{}recognitionRef.current=null};
+  },[index,live.micState,playing,SpeechRecognition]);
+
+  const move=offset=>{setPlaying(false);updateLine(indexRef.current+offset)};
+  const restart=()=>{setPlaying(false);updateLine(0)};
   const progress=((index+1)/FLOW_LINES.length)*100;
+
+  async function joinFlow(event){
+    event.preventDefault();
+    const name=nickname.trim();
+    if(!name){setJoinMessage("함께 읽을 때 사용할 이름을 입력해주세요.");return;}
+    setJoining(true);setJoinMessage("");
+    try{
+      const{error}=await supabase.auth.signInAnonymously({options:{data:{nickname:name}}});
+      if(error)throw error;
+    }catch(error){setJoinMessage(flowGuestError(error));setJoining(false)}
+  }
+
+  async function toggleFlow(){
+    if(live.channelState!=="connected")return;
+    if(playing){
+      setPlaying(false);
+      if(live.micState==="live")await live.toggleMic();
+      return;
+    }
+    if(live.micState!=="live")await live.toggleMic();
+    setPlaying(true);
+  }
+
+  async function copyFlowLink(){
+    const url=new URL(window.location.origin);
+    url.searchParams.set("flow","G9059002094");
+    await navigator.clipboard.writeText(url.toString());
+    setCopied(true);setTimeout(()=>setCopied(false),1400);
+  }
+
+  const onAudioElement=useCallback((id,element)=>{if(element)audioElementsRef.current.set(id,element);else audioElementsRef.current.delete(id)},[]);
+  const onAudioBlocked=useCallback(id=>setBlockedAudioIds(previous=>previous.includes(id)?previous:[...previous,id]),[]);
+  const onAudioPlaying=useCallback(id=>setBlockedAudioIds(previous=>previous.filter(item=>item!==id)),[]);
+  const enableRemoteAudio=useCallback(async()=>{
+    await live.startAudio?.();
+    await Promise.allSettled([...audioElementsRef.current.entries()].map(async([id,audio])=>{await audio.play();onAudioPlaying(id)}));
+  },[live.startAudio,onAudioPlaying]);
+
+  const connectedCount=live.participants.filter(item=>item.connectionState==="connected").length;
+  const activeCharacters=Array.from(FLOW_LINES[index]);
 
   return <section className="flowReaderPage">
     <button className="back" onClick={onBack}>‹ 읽기 방식 선택</button>
     <header className="flowHeader">
       <div><small>쪽GO FLOW · PUBLIC DOMAIN 01</small><h1>운수 좋은 날</h1><p>현진건 · 1924</p></div>
-      <div className="rightsBadge"><ShieldCheck/><span><b>이용 확인 완료</b><small>만료저작물 · 자유이용</small></span></div>
+      <div className="flowHeaderBadges"><div className="rightsBadge"><ShieldCheck/><span><b>이용 확인 완료</b><small>만료저작물 · 자유이용</small></span></div><button className="flowShare" onClick={copyFlowLink}><Copy/>{copied?"링크 복사됨":"FLOW 초대 링크"}</button></div>
     </header>
+
+    {!session&&<form className="flowGuestEntry" onSubmit={joinFlow}><UserRound/><div><b>이름만 적고 FLOW LIVE 입장</b><small>회원가입 없이 같은 글과 목소리를 함께 나눠요.</small></div><input required maxLength="30" value={nickname} onChange={event=>setNickname(event.target.value)} placeholder="참여 이름"/><button disabled={joining}>{joining?"입장 중…":"게스트 입장"}</button>{joinMessage&&<p role="status">{joinMessage}</p>}</form>}
+    {session&&<div className={`flowLiveStatus ${live.channelState}`}><span/><div><b>{live.channelState==="connected"?`FLOW LIVE · ${connectedCount}명 연결`:live.channelState==="connecting"?"FLOW LIVE 연결 중":"FLOW LIVE 연결 확인 필요"}</b><small>{live.message||"같은 문장과 목소리가 참여자에게 실시간으로 전달됩니다."}</small></div><Users/></div>}
+    {blockedAudioIds.length>0&&<button className="flowAudioUnlock" onClick={enableRemoteAudio}><Volume2/> 다른 참여자의 소리 재생하기</button>}
 
     <div className="flowStage" aria-live="polite">
       <div className="flowStageMeta"><span>EXCERPT {String(index+1).padStart(2,"0")}</span><span>{Math.round(progress)}%</span></div>
       <div className="flowContext previous">{index>0?FLOW_LINES[index-1]:"—"}</div>
-      <p className="flowActiveLine">{FLOW_LINES[index]}</p>
+      <p className="flowActiveLine" aria-label={FLOW_LINES[index]}>{activeCharacters.map((character,characterIndex)=><span key={`${index}-${characterIndex}`} className={characterIndex<highlightedCount?"spoken":""}>{character}</span>)}</p>
       <div className="flowContext next">{index<FLOW_LINES.length-1?FLOW_LINES[index+1]:"이 시범 구간을 모두 읽었습니다."}</div>
       <div className="flowProgress" aria-label={`읽기 진행률 ${Math.round(progress)}퍼센트`}><i style={{width:`${progress}%`}}/></div>
     </div>
 
     <div className="flowControls">
       <button onClick={()=>move(-1)} disabled={index===0}>← 이전 문장</button>
-      <button className="flowPlay" onClick={()=>setPlaying(value=>!value)}>{playing?<Pause/>:<Play/>}{playing?"잠시 멈춤":"FLOW 시작"}</button>
+      <button className={`flowPlay ${live.micState}`} onClick={toggleFlow} disabled={!session||live.channelState!=="connected"}>{playing?<Pause/>:<Mic/>}{playing?"낭독 잠시 멈춤":live.channelState==="connecting"?"LIVE 연결 중…":"마이크 켜고 FLOW 시작"}</button>
       <button onClick={()=>move(1)} disabled={index===FLOW_LINES.length-1}>다음 문장 →</button>
     </div>
     <div className="flowSettings">
@@ -86,10 +216,13 @@ export function FlowReader({onBack}){
       <button className="flowRestart" onClick={restart}><RotateCcw/> 처음부터</button>
     </div>
 
+    {session&&<section className="flowParticipants"><div><small>NOW IN FLOW</small><b>함께 읽는 사람</b></div><div>{live.participants.map(participant=><span key={participant.id} className={participant.micState}><i/>{participant.name}<small>{participant.micState==="live"?"읽는 중":participant.micState==="muted"?"음소거":"듣는 중"}</small></span>)}</div><p>{SpeechRecognition?"말한 길이를 감지해 글자 색을 따라가며, 선택한 속도가 자연스럽게 보조합니다.":"이 브라우저에서는 선택한 읽기 속도에 맞춰 글자 색이 진행됩니다."}</p></section>}
+
     <aside className="flowRights">
       <ShieldCheck/>
       <div><small>RIGHTS &amp; SOURCE</small><b>원문 이용 근거를 작품마다 먼저 확인합니다.</b><p>이 시범 콘텐츠는 한국저작권위원회 공유마당에서 만료저작물로 제공하는 원문을 기준으로 구성했습니다. 현대 출판사의 표지·편집·해설은 사용하지 않습니다.</p><a href={SOURCE_URL} target="_blank" rel="noreferrer">공식 원문과 이용정보 보기 ↗</a><em>출처: 한국저작권위원회 공유마당 · G905-9002094</em></div>
     </aside>
-    <div className="flowBetaNote"><b>FLOW BETA</b><span>현재는 읽기 리듬을 확인하는 시범 구간입니다. 다음 단계에서 LIVE 참여자 간 낭독 순서와 음성을 연결합니다.</span></div>
+    <div className="flowBetaNote"><b>FLOW BETA</b><span>LIVE 음성과 문장 위치가 연결되었습니다. 음성 인식은 브라우저에 따라 차이가 있어 선택한 읽기 속도가 함께 보조합니다.</span></div>
+    {live.remoteStreams.map(item=><RemoteAudio key={item.id} id={item.id} stream={item.stream} onBlocked={onAudioBlocked} onPlaying={onAudioPlaying} onElement={onAudioElement}/>)}
   </section>;
 }
