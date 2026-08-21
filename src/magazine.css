@@ -34,6 +34,7 @@ header{height:78px;border-bottom:1px solid var(--mag-black);display:grid;grid-te
 .brand{display:inline-flex;align-items:center;padding:4px 0;border:0;background:transparent;color:var(--mag-black);line-height:1;white-space:nowrap}
 .brandWordmark{display:inline-flex;align-items:center}
 .brandImage{display:block;width:65px;height:auto;mix-blend-mode:multiply}
+.desktopHeroMark,.desktopHeroActions,.desktopScrollCue,.desktopFooter{display:none}
 .mastNav{display:flex;align-items:center;gap:28px}
 .mastNav button{padding:8px 0;border:0;background:transparent;color:var(--mag-black);font-size:11px;font-weight:700;letter-spacing:.055em}
 .mastNav button:hover{text-decoration:underline;text-underline-offset:5px}
@@ -364,3 +365,55 @@ nav .mic.active{background:var(--mag-live)}
 .books>button{min-width:125px;padding:18px;border:0;border-right:1px solid var(--mag-line);border-bottom:1px solid var(--mag-line);border-radius:0;background:transparent;box-shadow:none;display:flex;flex-direction:column;gap:7px;text-align:left;color:inherit;font:inherit;cursor:pointer}.books>button:nth-child(2){background:transparent}.books>button:nth-child(3){background:transparent}.books>button:nth-child(2) .cover{background:var(--mag-live);color:white}.books>button:nth-child(3) .cover{background:var(--mag-black);color:white}.books>button>b{font-size:13px;font-weight:500}.books>button>strong{font-size:11px;color:var(--mag-live)}.books>button:focus-visible{outline:3px solid var(--mag-live);outline-offset:-3px}
 @media (max-width:699px){.recommendedBooks{margin-top:46px}.recommendedBooks .sectionHeading{align-items:flex-start;flex-direction:column;gap:4px}.books>button{min-width:70vw}.books>button .cover{height:220px}}
 @media (min-width:700px){.books>button{min-width:0}}
+
+/* Desktop website — deliberately separate from the mobile app shell.
+   Clubhouse-inspired restraint: one generous message, a compact masthead,
+   minimal actions and no persistent mobile dock. */
+@media (min-width:900px){
+  body{background:var(--mag-paper)}
+  .app{max-width:none;min-height:100vh}
+  .readingBanner{display:none}
+  main{max-width:1320px;margin:0 auto;padding:0 56px 84px}
+  header{height:92px;border-bottom:0;grid-template-columns:1fr auto auto;gap:42px}
+  .brandImage{width:78px}
+  .mastNav{justify-self:end;gap:31px}
+  .mastNav button{font-size:10px;letter-spacing:.08em}
+  header>button.headAccount{min-height:38px;padding:0 17px;border:1px solid var(--mag-black);border-radius:999px}
+  header>button.headAccount:hover{border:1px solid var(--mag-black);background:var(--mag-black);color:white;text-decoration:none}
+  .mobileDock{display:none!important}
+
+  .view-home main{max-width:none;padding:0 56px 96px}
+  .view-home header{max-width:1320px;margin:0 auto}
+  .view-home .hero{position:relative;isolation:isolate;min-height:calc(100vh - 92px);max-width:1320px;margin:0 auto;padding:90px 0 120px;border:0;display:grid;place-items:center;text-align:center;overflow:hidden}
+  .view-home .hero:before,.view-home .hero:after{content:"";position:absolute;z-index:-1;border-radius:50%;pointer-events:none}
+  .view-home .hero:before{width:280px;height:280px;left:-105px;bottom:11%;background:var(--mag-lime)}
+  .view-home .hero:after{width:150px;height:150px;right:2%;top:10%;border:22px solid var(--mag-live);background:transparent}
+  .view-home .hero>div:first-child{width:min(940px,82vw);display:flex;flex-direction:column;align-items:center}
+  .desktopHeroMark{display:block;margin-bottom:34px}
+  .desktopHeroMark .brandImage{width:128px}
+  .view-home .heroEyebrow{font-size:10px;letter-spacing:.18em}
+  .view-home .hero h1{margin:22px 0 28px;font-size:clamp(92px,10.5vw,164px);font-weight:500;line-height:.88;letter-spacing:-.095em}
+  .view-home .hero p{margin:0;font-size:17px;line-height:1.8}
+  .view-home .heroArt{display:none}
+  .desktopHeroActions{display:flex;align-items:center;gap:10px;margin-top:36px}
+  .desktopHeroActions button{min-height:46px;padding:0 20px;border:1px solid var(--mag-black);border-radius:999px;background:transparent;color:var(--mag-black);font-size:11px;font-weight:700}
+  .desktopHeroActions button:first-child{display:flex;align-items:center;gap:8px;background:var(--mag-black);color:white}
+  .desktopHeroActions button:first-child:hover{background:var(--mag-live);border-color:var(--mag-live)}
+  .desktopHeroActions button:last-child:hover{background:var(--mag-lime)}
+  .desktopHeroActions svg{width:15px}
+  .desktopScrollCue{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);display:flex;align-items:center;gap:12px;color:var(--mag-muted);font-size:8px;font-weight:700;letter-spacing:.16em}
+  .desktopScrollCue b{color:var(--mag-black);font-size:18px;font-weight:400}
+  .view-home .welcome,.view-home .homeActions,.view-home .homeFormatStrip,.view-home .recommendedBooks,.view-home>h3,.view-home .calendar,.view-home .scheduleDiary,.view-home .emptyRooms,.view-home .card{max-width:1208px;margin-left:auto;margin-right:auto}
+  .view-home .welcome{margin-top:0}
+
+  .desktopFooter{min-height:88px;padding:0 56px;border-top:1px solid var(--mag-black);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:34px;background:var(--mag-paper);font-size:8px;letter-spacing:.1em}
+  .desktopFooter>div{display:flex;gap:24px}
+  .desktopFooter button{padding:7px 0;border:0;background:transparent;font-size:9px;font-weight:700;letter-spacing:.08em}
+  .desktopFooter button:hover{text-decoration:underline;text-underline-offset:5px}
+  .desktopFooter>b{justify-self:end;font-size:8px;font-weight:600;letter-spacing:.12em}
+}
+
+@media (min-width:900px) and (max-height:760px){
+  .view-home .hero{min-height:680px;padding-top:55px}
+  .view-home .hero h1{font-size:clamp(82px,9vw,132px)}
+}
