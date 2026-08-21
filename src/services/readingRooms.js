@@ -27,6 +27,18 @@ export async function fetchReadingRoom(roomId){
   return data;
 }
 
+export async function fetchJoinedReadingRooms(userId){
+  if(!userId)return [];
+  const {data,error}=await supabase
+    .from("reading_room_members")
+    .select(`role, joined_at, reading_rooms(*, books(${BOOK_FIELDS}))`)
+    .eq("user_id",userId)
+    .eq("role","member")
+    .order("joined_at",{ascending:false});
+  if(error)throw error;
+  return (data||[]).map(item=>item.reading_rooms).filter(Boolean);
+}
+
 export async function joinReadingRoom(inviteCode){
   const normalized=normalizeInviteCode(inviteCode);
   if(normalized.length<6)throw new Error("INVALID_INVITE_CODE");

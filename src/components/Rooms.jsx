@@ -1,7 +1,7 @@
 import {useCallback,useEffect,useState} from "react";
 import {BookOpen,ChevronRight,Copy,Lock,Pencil,Trash2,Users} from "lucide-react";
 import {supabase} from "../supabase";
-import {BOOK_FIELDS,guestInviteUrl,joinReadingRoom,normalizeInviteCode} from "../services/readingRooms";
+import {BOOK_FIELDS,fetchJoinedReadingRooms,guestInviteUrl,joinReadingRoom,normalizeInviteCode} from "../services/readingRooms";
 import BookPicker from "./BookPicker";
 
 function roomError(error){
@@ -180,12 +180,12 @@ export function Rooms({setV,open,session,openAuth}){
       :supabase.from("reading_rooms").select(`*, books(${BOOK_FIELDS})`).eq("owner_id",session.user.id).order("created_at",{ascending:false});
     const [ownedResult,membershipResult]=await Promise.all([
       ownedRequest,
-      supabase.from("reading_room_members").select(`role, joined_at, reading_rooms(*, books(${BOOK_FIELDS}))`).eq("user_id",session.user.id).eq("role","member").order("joined_at",{ascending:false})
+      fetchJoinedReadingRooms(session.user.id).then(data=>({data,error:null})).catch(error=>({data:null,error}))
     ]);
     if(ownedResult.error)setMessage(roomError(ownedResult.error));
     else setOwnedRooms(ownedResult.data||[]);
     if(membershipResult.error)setMessage(roomError(membershipResult.error));
-    else setJoinedRooms((membershipResult.data||[]).map(item=>item.reading_rooms).filter(Boolean));
+    else setJoinedRooms(membershipResult.data||[]);
     setBusy(false);
   },[isGuest,session]);
 

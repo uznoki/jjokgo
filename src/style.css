@@ -355,3 +355,6 @@ header>button.headAccount{border:1px solid #d8d0c1;background:#fffaf2;color:var(
 
 /* Guest invite v1 */
 .guestJoin{padding-bottom:40px}.guestBadge{display:inline-flex;margin-top:30px;padding:7px 11px;border-radius:999px;background:#edf3e7;color:var(--g);font-size:12px;font-weight:800}.guestJoin .authBrand{margin-top:25px}.guestJoin form{margin-top:26px}.guestJoin .wide{display:flex;align-items:center;justify-content:center;gap:8px}.guestJoin .wide svg{width:19px}.guestJoin .authNote{line-height:1.55}
+
+/* Account-linked joined rooms */
+.myRoomsState{min-height:130px;border:1px solid #d8d3c9;padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center;color:#777}.myRoomsState b{color:#151515}.myRoomsState small{font-size:12px}.myRoomsState.error{background:#fff0ec;color:#8b392d}.myJoinedRooms .card>svg{width:20px;flex:0 0 auto}.myJoinedRooms .card>span{min-width:0}.myJoinedRooms .card b,.myJoinedRooms .card small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

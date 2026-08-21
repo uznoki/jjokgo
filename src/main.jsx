@@ -9,7 +9,7 @@ import{GuestJoin}from"./components/GuestJoin";
 import{BrandWordmark}from"./components/BrandWordmark";
 import{ScheduleManager}from"./components/ScheduleManager";
 import{FlowReader,ReadingModes}from"./components/FlowReader";
-import{normalizeInviteCode}from"./services/readingRooms";
+import{fetchJoinedReadingRooms,normalizeInviteCode}from"./services/readingRooms";
 import"./style.css";
 import"./calm.css";
 import"./magazine.css";
@@ -104,7 +104,7 @@ function App(){
         {v==="rooms"&&<Rooms setV={setV} open={openRoom} session={session} openAuth={openAuth}/>}
         {v==="room"&&<LiveRoom room={room} setView={setV} session={session}/>}
         {v==="library"&&session&&!isGuest&&<Library session={session} openRoom={openRoom}/>}
-        {v==="my"&&(session&&!isGuest?<My session={session} setV={setV}/>:<Auth setV={setV}/>)}
+        {v==="my"&&(session&&!isGuest?<My session={session} setV={setV} openRoom={openRoom}/>:<Auth setV={setV}/>)}
         {v==="auth"&&<Auth setV={setV}/>}
       </>}
     </main>
@@ -185,7 +185,36 @@ async function resizeProfileImage(file){
   return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error("IMAGE_PROCESS")),"image/webp",.84));
 }
 
-function My({session,setV}){
+function MyJoinedRooms({session,onOpen}){
+  const[rooms,setRooms]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const[message,setMessage]=useState("");
+
+  useEffect(()=>{
+    let active=true;
+    setLoading(true);
+    setMessage("");
+    fetchJoinedReadingRooms(session.user.id)
+      .then(data=>{if(active)setRooms(data)})
+      .catch(error=>{
+        console.error("Joined rooms load failed",error);
+        if(active)setMessage("참여 중인 방을 불러오지 못했어요. 잠시 후 다시 확인해주세요.");
+      })
+      .finally(()=>{if(active)setLoading(false)});
+    return()=>{active=false};
+  },[session.user.id]);
+
+  if(loading)return <div className="myRoomsState">참여 중인 방을 확인하는 중…</div>;
+  if(message)return <div className="myRoomsState error" role="status">{message}</div>;
+  if(!rooms.length)return <div className="myRoomsState"><b>현재 참여 중인 방이 없어요.</b><small>초대 코드로 입장한 방이 여기에 표시됩니다.</small></div>;
+  return <div className="myJoinedRooms">{rooms.map(room=><button key={room.id} className="card" onClick={()=>onOpen(room)}>
+    <div className="thumb">{room.books?.cover_url?<img src={room.books.cover_url} alt=""/>:"📖"}</div>
+    <span><b>{room.name} {room.is_private?"🔒":""}</b><small>{room.books?.title||"책 정보"}{room.current_page?` · ${room.current_page}쪽`:""}</small></span>
+    <ChevronRight/>
+  </button>)}</div>;
+}
+
+function My({session,setV,openRoom}){
   const fallbackNickname=session.user.email?.split("@")[0]||"쪽GO 사용자";
   const savedNickname=session.user.user_metadata?.nickname||fallbackNickname;
   const savedAvatar=session.user.user_metadata?.avatar_url||"";
@@ -265,7 +294,7 @@ function My({session,setV}){
     <button className="logout" onClick={logout}><LogOut/> 로그아웃</button>
     <h3>이번 달 나의 읽기</h3><div className="stats"><div>시작 전<b>2권</b></div><div>읽는 중<b>3권</b></div><div>읽기 완료<b>1권</b></div></div>
     <h3>나의 읽기 달력</h3><Calendar schedules={schedules} showDiary={false}/><ScheduleManager session={session} onSchedulesChange={setSchedules}/>
-    <h3>참여 중인 방</h3><Card r={demoRooms[0]} f={()=>setV("rooms")}/><div className="demoNotice">현재 읽기방/달력은 데모 데이터예요. 다음 버전에서 실제 계정별 데이터로 연결합니다.</div>
+    <h3>참여 중인 방</h3><MyJoinedRooms session={session} onOpen={openRoom}/>
   </>;
 }
 createRoot(document.getElementById("root")).render(<App/>);
