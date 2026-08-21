@@ -85,7 +85,7 @@ h3:after{content:"  /  EDITOR'S SELECTION";float:right;color:var(--mag-muted);fo
 
 .hero{min-height:520px;height:auto;margin:0;padding:56px 0;border-bottom:1px solid var(--mag-black);border-radius:0;background:transparent;gap:70px}
 .hero>div:first-child{flex:1 1 52%}
-.hero h1{margin:24px 0 30px;color:var(--mag-black);font-size:clamp(64px,8vw,112px);font-weight:500;line-height:.86;letter-spacing:-.085em}
+.hero h1{margin:24px 0 30px;color:var(--mag-black);font-size:clamp(64px,8vw,112px);font-weight:500;line-height:1.03;letter-spacing:-.085em}
 .hero p{color:var(--mag-ink);font-size:15px;font-weight:400;line-height:1.7}
 .heroEyebrow{padding:0;border-radius:0;background:transparent;color:var(--mag-ink);font-size:10px;font-weight:700;letter-spacing:.12em}
 .heroArt{flex:0 0 min(44vw,520px);width:min(44vw,520px);height:380px;display:grid;place-items:stretch;grid-template-columns:1.6fr 1fr;grid-template-rows:1fr 1fr;gap:0;border:1px solid var(--mag-black);border-radius:0;background:var(--mag-white);box-shadow:none;transform:none;font-size:initial!important}
