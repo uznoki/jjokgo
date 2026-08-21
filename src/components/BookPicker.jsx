@@ -124,6 +124,6 @@ export default function BookPicker({selected,onSelect}){
         <button type="button" className="manualBookSelect" onClick={chooseManual}>이 정보로 책 선택</button>
       </div>}
     </>}
-    <small className="catalogCredit">기본 검색 데이터: Open Library · Google Books 키 설정 시 통합 검색</small>
+    <small className="catalogCredit">검색 데이터: Google Books · Open Library · 국립중앙도서관 연동 지원</small>
   </section>;
 }

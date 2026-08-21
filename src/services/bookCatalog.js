@@ -1,5 +1,6 @@
 const OPEN_LIBRARY_URL="https://openlibrary.org/search.json";
 const GOOGLE_BOOKS_URL="https://www.googleapis.com/books/v1/volumes";
+const KOREAN_BOOKS_URL="/api/book-search";
 
 function cleanIsbn(value){
   return String(value||"").replace(/[^0-9X]/gi,"").toUpperCase();
@@ -52,6 +53,8 @@ export async function searchBookCatalog(query,{signal}={}){
   const keyword=query.trim();
   if(keyword.length<2)return [];
 
+  const koreanParams=new URLSearchParams({q:keyword,limit:"24"});
+
   const openLibraryParams=new URLSearchParams({
     q:keyword,
     lang:"ko",
@@ -59,26 +62,35 @@ export async function searchBookCatalog(query,{signal}={}){
     fields:"key,title,author_name,publisher,first_publish_year,isbn,cover_i"
   });
   const requests=[
+    fetch(`${KOREAN_BOOKS_URL}?${koreanParams}`,{signal})
+      .then(async response=>{
+        if(response.status===404||response.status===503)return [];
+        if(!response.ok)throw new Error("KOREAN_CATALOG_FAILED");
+        const data=await response.json();
+        return Array.isArray(data.books)?data.books:[];
+      }),
     fetch(`${OPEN_LIBRARY_URL}?${openLibraryParams}`,{signal})
       .then(response=>response.ok?response.json():Promise.reject(new Error("OPEN_LIBRARY_FAILED")))
       .then(data=>(data.docs||[]).map(openLibraryBook))
   ];
 
+  // Google Books supports unauthenticated public searches. An API key is
+  // optional and only raises the project's quota, so Korean catalog search
+  // must not disappear just because a key has not been configured.
+  const googleParams=new URLSearchParams({
+    q:keyword,
+    maxResults:"24",
+    printType:"books",
+    orderBy:"relevance",
+    langRestrict:"ko"
+  });
   const googleKey=import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
-  if(googleKey){
-    const googleParams=new URLSearchParams({
-      q:keyword,
-      maxResults:"18",
-      printType:"books",
-      orderBy:"relevance",
-      key:googleKey
-    });
-    requests.push(
-      fetch(`${GOOGLE_BOOKS_URL}?${googleParams}`,{signal})
-        .then(response=>response.ok?response.json():Promise.reject(new Error("GOOGLE_BOOKS_FAILED")))
-        .then(data=>(data.items||[]).map(googleBook))
-    );
-  }
+  if(googleKey)googleParams.set("key",googleKey);
+  requests.push(
+    fetch(`${GOOGLE_BOOKS_URL}?${googleParams}`,{signal})
+      .then(response=>response.ok?response.json():Promise.reject(new Error("GOOGLE_BOOKS_FAILED")))
+      .then(data=>(data.items||[]).map(googleBook))
+  );
 
   const settled=await Promise.allSettled(requests);
   const books=settled.flatMap(result=>result.status==="fulfilled"?result.value:[]);

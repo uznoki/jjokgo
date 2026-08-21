@@ -2,7 +2,6 @@ import {useState} from "react";
 import {LogIn,UserRound} from "lucide-react";
 import {supabase} from "../supabase";
 import {joinReadingRoom} from "../services/readingRooms";
-import {BrandWordmark} from "./BrandWordmark";
 
 function guestError(error){
   const message=String(error?.message||"");
@@ -50,7 +49,6 @@ export function GuestJoin({inviteCode,session,onJoined,onCancel}){
 
   return <section className="auth guestJoin">
     <button className="back" onClick={onCancel}>‹ 홈으로</button>
-    <BrandWordmark className="authBrand"/>
     <div className="guestBadge">초대받은 LIVE 독서방</div>
     <h1>이름만 적고<br/>바로 함께 읽어요.</h1>
     <p>회원가입과 인증 메일 없이 오늘의 독서방에 게스트로 참여합니다.</p>

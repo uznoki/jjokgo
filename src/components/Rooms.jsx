@@ -3,7 +3,6 @@ import {BookOpen,ChevronRight,Copy,Lock,Pencil,Users} from "lucide-react";
 import {supabase} from "../supabase";
 import {BOOK_FIELDS,guestInviteUrl,joinReadingRoom,normalizeInviteCode} from "../services/readingRooms";
 import BookPicker from "./BookPicker";
-import {BrandWordmark} from "./BrandWordmark";
 
 function roomError(error){
   const message=error?.message||"";
@@ -228,7 +227,6 @@ export function CreateRoom({setV,session}){
 
   if(createdRoom){
     return <section className="auth createdRoom">
-      <BrandWordmark className="authBrand"/>
       <h1>읽기방이 만들어졌어요!</h1>
       <p>함께 읽을 사람에게 게스트 초대 링크를 보내주세요.</p>
       <button className="createdInviteCode" onClick={copyInvite}><Copy/><b>{createdRoom.invite_code}</b><small>{copied?"초대 링크가 복사됐어요":"눌러서 게스트 링크 복사"}</small></button>
@@ -238,7 +236,6 @@ export function CreateRoom({setV,session}){
 
   return <section className="auth">
     <button className="back" onClick={()=>setV("rooms")}>‹ 함께 읽기방</button>
-    <BrandWordmark className="authBrand"/>
     <h1>함께 읽기방 만들기</h1>
     <p>같이 읽을 사람들과 새로운 LIVE 독서방을 만들어보세요.</p>
     <div className="createRoomForm">
