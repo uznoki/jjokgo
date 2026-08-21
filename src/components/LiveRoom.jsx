@@ -1,9 +1,9 @@
 import {useCallback,useEffect,useRef,useState} from "react";
+import {Pencil} from "lucide-react";
+import {supabase} from "../supabase";
 import {RemoteAudio} from "./RemoteAudio";
 import {useLiveKitRoom} from "../hooks/useLiveKitRoom";
 import {useLiveRoom} from "../hooks/useLiveRoom";
-
-const TOTAL_PAGES=27;
 
 function participantStatus(participant){
   if(participant.connectionState==="failed")return "연결 실패";
@@ -16,21 +16,37 @@ function participantStatus(participant){
 }
 
 export function LiveRoom({room,setView,session}){
-  const [page,setPage]=useState(17);
-  const pageRef=useRef(17);
+  const initialPage=Math.max(1,Number(room?.current_page||room?.reading_start_page)||1);
+  const [page,setPage]=useState(initialPage);
+  const pageRef=useRef(initialPage);
+  const [pageInput,setPageInput]=useState(String(initialPage));
+  const [plan,setPlan]=useState({
+    totalPages:Number(room?.total_pages)||null,
+    startPage:Math.max(1,Number(room?.reading_start_page)||1),
+    endPage:Number(room?.reading_end_page)||null
+  });
+  const [planDraft,setPlanDraft]=useState({totalPages:room?.total_pages||"",startPage:room?.reading_start_page||1,endPage:room?.reading_end_page||""});
+  const [editingPlan,setEditingPlan]=useState(false);
+  const [pageMessage,setPageMessage]=useState("");
+  const [savingPlan,setSavingPlan]=useState(false);
+  const pageSaveChainRef=useRef(Promise.resolve());
   const audioElementsRef=useRef(new Map());
   const [blockedAudioIds,setBlockedAudioIds]=useState([]);
 
+  const maximumPage=plan.totalPages||20000;
+  const isOwner=room?.owner_id===session?.user?.id&&!session?.user?.is_anonymous;
+
   const onRemotePage=useCallback(next=>{
-    const safePage=Math.max(1,Math.min(TOTAL_PAGES,Number(next)||1));
+    const safePage=Math.max(1,Math.min(maximumPage,Number(next)||1));
     pageRef.current=safePage;
     setPage(safePage);
-  },[]);
+    setPageInput(String(safePage));
+  },[maximumPage]);
 
   const displayName=session?.user?.user_metadata?.nickname||session?.user?.email?.split("@")[0]||"쪽GO 참여자";
   const liveKitEnabled=import.meta.env.VITE_LIVEKIT_ENABLED==="true";
-  const peerLive=useLiveRoom({roomId:room?.id,displayName,initialPage:17,onRemotePage,enabled:!liveKitEnabled});
-  const liveKitLive=useLiveKitRoom({roomId:room?.id,session,initialPage:17,onRemotePage,enabled:liveKitEnabled});
+  const peerLive=useLiveRoom({roomId:room?.id,displayName,initialPage,onRemotePage,enabled:!liveKitEnabled});
+  const liveKitLive=useLiveKitRoom({roomId:room?.id,session,initialPage,onRemotePage,enabled:liveKitEnabled});
   const live=liveKitEnabled?liveKitLive:peerLive;
 
   const onAudioElement=useCallback((id,element)=>{
@@ -72,10 +88,41 @@ export function LiveRoom({room,setView,session}){
   },[enableRemoteAudio]);
 
   function changePage(next){
-    const safePage=Math.max(1,Math.min(TOTAL_PAGES,next));
+    const safePage=Math.max(1,Math.min(maximumPage,Number(next)||1));
     pageRef.current=safePage;
     setPage(safePage);
+    setPageInput(String(safePage));
+    setPageMessage("");
     live.broadcastPage(safePage);
+    pageSaveChainRef.current=pageSaveChainRef.current
+      .catch(()=>{})
+      .then(async()=>{
+        const{error}=await supabase.rpc("set_reading_room_page",{p_room_id:String(room.id),p_page:safePage});
+        if(error)throw error;
+      })
+      .catch(error=>{
+        console.error("Page persistence failed",error);
+        setPageMessage("현재 쪽 저장이 잠시 지연되고 있어요. 음성과 실시간 페이지 공유는 계속 사용할 수 있어요.");
+      });
+  }
+
+  function jumpToPage(event){event.preventDefault();changePage(pageInput)}
+
+  async function savePlan(event){
+    event.preventDefault();
+    const total=planDraft.totalPages===""?null:Number(planDraft.totalPages);
+    const start=Number(planDraft.startPage);
+    const end=Number(planDraft.endPage);
+    if(!Number.isInteger(start)||!Number.isInteger(end)||start<1||end<start){setPageMessage("오늘 읽을 시작 쪽과 마지막 쪽을 확인해주세요.");return;}
+    if(total!==null&&(!Number.isInteger(total)||total<end||total>20000)){setPageMessage("책 전체 쪽수는 오늘 읽을 마지막 쪽보다 크거나 같아야 해요.");return;}
+    setSavingPlan(true);setPageMessage("");
+    const{data,error}=await supabase.rpc("update_reading_room_plan",{p_room_id:String(room.id),p_total_pages:total,p_start_page:start,p_end_page:end});
+    if(error){console.error("Reading plan update failed",error);setPageMessage("읽기 범위를 저장하지 못했어요. 잠시 후 다시 시도해주세요.");setSavingPlan(false);return;}
+    const updated=Array.isArray(data)?data[0]:data;
+    const nextPage=Math.max(1,Number(updated?.current_page)||pageRef.current);
+    setPlan({totalPages:total,startPage:start,endPage:end});
+    setPage(nextPage);pageRef.current=nextPage;setPageInput(String(nextPage));live.broadcastPage(nextPage);
+    setEditingPlan(false);setSavingPlan(false);setPageMessage("읽기 범위를 저장했어요.");
   }
 
   if(!room?.id){
@@ -116,7 +163,19 @@ export function LiveRoom({room,setView,session}){
       </button>
     }
 
-    <div className="demoNotice">📖 지금 함께 읽는 페이지 · {page}쪽</div>
+    <section className="readingPlanSummary">
+      <div><small>TODAY'S READING</small><b>오늘 {plan.startPage}–{plan.endPage||"미정"}쪽</b><span>현재 {page}쪽 · 전체 {plan.totalPages?`${plan.totalPages}쪽`:"쪽수 미설정"}</span>{plan.endPage&&page>=plan.endPage&&<em>✓ 오늘 목표 완료</em>}</div>
+      {isOwner&&<button type="button" onClick={()=>setEditingPlan(value=>!value)}><Pencil/> 읽기 범위 설정</button>}
+      <div className="todayProgress" aria-label="오늘 읽기 진행률"><i style={{width:`${plan.endPage?Math.max(0,Math.min(100,((page-plan.startPage+1)/Math.max(1,plan.endPage-plan.startPage+1))*100)):0}%`}}/></div>
+    </section>
+
+    {editingPlan&&<form className="readingPlanEditor" onSubmit={savePlan}>
+      <label>책 전체 쪽수 <small>선택</small><input type="number" min="1" max="20000" value={planDraft.totalPages} onChange={event=>setPlanDraft({...planDraft,totalPages:event.target.value})}/></label>
+      <label>오늘 시작 쪽<input required type="number" min="1" max="20000" value={planDraft.startPage} onChange={event=>setPlanDraft({...planDraft,startPage:event.target.value})}/></label>
+      <label>오늘 마지막 쪽<input required type="number" min={planDraft.startPage||1} max={planDraft.totalPages||20000} value={planDraft.endPage} onChange={event=>setPlanDraft({...planDraft,endPage:event.target.value})}/></label>
+      <button disabled={savingPlan}>{savingPlan?"저장 중…":"범위 저장"}</button>
+    </form>}
+    {pageMessage&&<div className="pageSyncMessage" role="status">{pageMessage}</div>}
 
     <section className="readingPage">
       <div className="readingBookTitle">{room.books?.title||"함께 읽는 책"}</div>
@@ -125,7 +184,8 @@ export function LiveRoom({room,setView,session}){
         <p>이곳에서 모두가 같은 책을 보며 함께 읽어요.</p>
         <small>실제 책 콘텐츠는 적법하게 제공되는 방식으로 연결합니다.</small>
       </div>
-      <div className="pageCounter">{page} / {TOTAL_PAGES}쪽</div>
+      <form className="pageJump" onSubmit={jumpToPage}><label>현재 쪽<input type="number" inputMode="numeric" min="1" max={maximumPage} value={pageInput} onChange={event=>setPageInput(event.target.value)}/></label><button>이동</button></form>
+      <div className="pageCounter">{page} / {plan.totalPages||"—"}쪽</div>
     </section>
 
     <h3>지금 함께 읽는 사람</h3>
@@ -147,7 +207,7 @@ export function LiveRoom({room,setView,session}){
       <button className={`wide liveButton ${live.micState}`} onClick={live.toggleMic} disabled={isConnecting||micBusy} aria-pressed={live.micState==="live"}>
         {micBusy?"마이크 권한 확인 중…":live.micState==="live"?"🔴 내 마이크 음소거":live.micState==="muted"?"🎙 음소거 해제":"🎙 LIVE 함께 읽기"}
       </button>
-      <button className="secondary" onClick={()=>changePage(pageRef.current+1)} disabled={page>=TOTAL_PAGES}>다음 쪽 →</button>
+      <button className="secondary" onClick={()=>changePage(pageRef.current+1)} disabled={page>=maximumPage}>다음 쪽 →</button>
     </div>
 
     <div className={`liveHelp ${live.micState}`} aria-live="polite">

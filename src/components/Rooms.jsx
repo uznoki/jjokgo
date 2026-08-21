@@ -15,6 +15,7 @@ function roomError(error){
   if(message.includes("INVALID_COVER_URL"))return "표지 주소는 https://로 시작해야 해요.";
   if(message.includes("BOOK_METADATA_TOO_LONG"))return "책 정보가 너무 길어요. 제목과 상세 정보를 줄여주세요.";
   if(message.includes("BOOK_UPDATE_DENIED"))return "이 책 정보를 수정할 권한이 없어요.";
+  if(message.includes("total_pages")||message.includes("reading_start_page")||message.includes("reading_end_page")||message.includes("current_page"))return "읽기 페이지 데이터베이스 설정이 아직 적용되지 않았어요.";
   if(message.includes("join_reading_room_by_code")||message.includes("reading_room_members")){
     return "초대 기능의 데이터베이스 설정이 아직 적용되지 않았어요.";
   }
@@ -185,6 +186,9 @@ export function Rooms({setV,open,session,openAuth}){
 export function CreateRoom({setV,session}){
   const [name,setName]=useState("");
   const [selectedBook,setSelectedBook]=useState(null);
+  const [totalPages,setTotalPages]=useState("");
+  const [startPage,setStartPage]=useState("1");
+  const [endPage,setEndPage]=useState("");
   const [busy,setBusy]=useState(false);
   const [message,setMessage]=useState("");
   const [createdRoom,setCreatedRoom]=useState(null);
@@ -194,6 +198,11 @@ export function CreateRoom({setV,session}){
     if(!session)return;
     if(!name.trim()){setMessage("방 이름을 입력해주세요.");return;}
     if(!selectedBook){setMessage("함께 읽을 책을 검색하거나 직접 등록해주세요.");return;}
+    const parsedTotal=totalPages===""?null:Number(totalPages);
+    const parsedStart=Number(startPage);
+    const parsedEnd=Number(endPage);
+    if(!Number.isInteger(parsedStart)||!Number.isInteger(parsedEnd)||parsedStart<1||parsedEnd<parsedStart){setMessage("오늘 읽을 시작 쪽과 마지막 쪽을 확인해주세요.");return;}
+    if(parsedTotal!==null&&(!Number.isInteger(parsedTotal)||parsedTotal<parsedEnd||parsedTotal>20000)){setMessage("책 전체 쪽수는 오늘 읽을 마지막 쪽보다 크거나 같아야 해요.");return;}
     setBusy(true);
     setMessage("");
     const{data:refreshData,error:refreshError}=await supabase.auth.refreshSession();
@@ -220,7 +229,10 @@ export function CreateRoom({setV,session}){
       setBusy(false);
       return;
     }
-    const {data,error}=await supabase.from("reading_rooms").insert({name:name.trim(),book_id:bookData.id,owner_id:activeSession.user.id,is_private:true}).select("id,name,invite_code").single();
+    const {data,error}=await supabase.from("reading_rooms").insert({
+      name:name.trim(),book_id:bookData.id,owner_id:activeSession.user.id,is_private:true,
+      total_pages:parsedTotal,reading_start_page:parsedStart,reading_end_page:parsedEnd,current_page:parsedStart,page_updated_by:activeSession.user.id
+    }).select("id,name,invite_code,total_pages,reading_start_page,reading_end_page,current_page").single();
     if(error){
       setMessage("방을 만들지 못했어요: "+roomError(error));
       setBusy(false);
@@ -251,6 +263,13 @@ export function CreateRoom({setV,session}){
     <div className="createRoomForm">
       <label>방 이름<input required maxLength="100" value={name} onChange={event=>setName(event.target.value)} placeholder="예: 우리 가족 책방"/></label>
       <BookPicker selected={selectedBook} onSelect={setSelectedBook}/>
+      <section className="pagePlanFields" aria-labelledby="page-plan-title">
+        <div className="pagePlanHeading"><b id="page-plan-title">오늘 읽을 페이지</b><small>실제 가지고 있는 책의 페이지를 기준으로 입력해주세요.</small></div>
+        <label>책 전체 쪽수 <small>선택</small><input type="number" inputMode="numeric" min="1" max="20000" value={totalPages} onChange={event=>setTotalPages(event.target.value)} placeholder="예: 312"/></label>
+        <label>시작 쪽<input required type="number" inputMode="numeric" min="1" max="20000" value={startPage} onChange={event=>setStartPage(event.target.value)}/></label>
+        <label>마지막 쪽<input required type="number" inputMode="numeric" min={startPage||1} max={totalPages||20000} value={endPage} onChange={event=>setEndPage(event.target.value)} placeholder="예: 20"/></label>
+        <p>전체 쪽수를 모르면 비워두어도 괜찮아요. 방을 만든 뒤 방장이 다시 설정할 수 있어요.</p>
+      </section>
       <button type="button" className="wide" disabled={busy} onClick={createRoom}>{busy?"만드는 중…":"방 만들기"}</button>
     </div>
     {message&&<div className="authMsg">{message}</div>}

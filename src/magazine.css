@@ -189,13 +189,33 @@ h3:after{content:"  /  EDITOR'S SELECTION";float:right;color:var(--mag-muted);fo
 .emptyRooms{border:1px solid var(--mag-line);border-radius:0;background:transparent}
 .bookPicker,.bookEditor,.bookSearch,.bookResults{border:1px solid var(--mag-line);border-radius:0;background:var(--mag-white)}
 .manualBookToggle,.selectedBook{border:1px solid var(--mag-black);border-radius:0;background:var(--mag-lime);color:var(--mag-black)}
+.pagePlanFields{margin-top:18px;padding:18px;border:1px solid var(--mag-black);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;background:var(--mag-white)}
+.pagePlanHeading{grid-column:1/-1;display:flex;flex-direction:column;gap:4px;padding-bottom:12px;border-bottom:1px solid var(--mag-line)}
+.pagePlanHeading b{font-size:15px;font-weight:600}.pagePlanHeading small{color:var(--mag-muted);font-size:10px}
+.pagePlanFields label{display:flex!important;grid-template-columns:1fr!important;flex-direction:column;gap:5px}.pagePlanFields label>small{display:inline;color:var(--mag-muted);font-weight:400}
+.pagePlanFields input{grid-column:auto!important;margin:0!important}.pagePlanFields>p{grid-column:1/-1;margin:0;color:var(--mag-muted);font-size:10px;line-height:1.6}
 
 .liveRoomView .room{padding:24px 0;border-top:1px solid var(--mag-black);border-bottom:1px solid var(--mag-black);background:transparent;color:var(--mag-black)}
 .liveRoomView .room .thumb.big{border-radius:0;background:var(--mag-blue);box-shadow:none}
 .liveConnection{border:1px solid var(--mag-line);border-radius:0;background:var(--mag-white)}
 .liveConnection.connecting{background:var(--mag-lime)}
 .liveConnection.error,.liveConnection.closed{background:#f5d5ce}
+.readingPlanSummary{position:relative;margin:0 0 16px;padding:20px;border:1px solid var(--mag-black);background:var(--mag-white);display:flex;align-items:center;justify-content:space-between;gap:20px}
+.readingPlanSummary>div:first-child{display:flex;flex-direction:column;gap:5px}.readingPlanSummary small{font-size:8px;font-weight:700;letter-spacing:.12em;color:var(--mag-live)}
+.readingPlanSummary b{font-size:21px;font-weight:500}.readingPlanSummary span{font-size:11px;color:var(--mag-muted)}
+.readingPlanSummary em{color:var(--mag-live);font-size:10px;font-style:normal;font-weight:700}
+.readingPlanSummary>button{padding:8px 0;border:0;border-bottom:1px solid var(--mag-black);background:transparent;display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700}.readingPlanSummary>button svg{width:13px}
+.todayProgress{position:absolute!important;left:0;right:0;bottom:0;height:3px;background:#e3e2dc}.todayProgress i{display:block;height:100%;background:var(--mag-live);transition:width .2s}
+.readingPlanEditor{margin:-1px 0 16px;padding:18px;border:1px solid var(--mag-black);background:var(--mag-blue);display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:12px;align-items:end}
+.readingPlanEditor label{display:flex;flex-direction:column;gap:5px;font-size:10px;font-weight:700}.readingPlanEditor label small{font-weight:400}
+.readingPlanEditor input{width:100%;min-height:42px;padding:8px;border:0;border-bottom:1px solid var(--mag-black);background:rgba(255,255,255,.55)}
+.readingPlanEditor>button{min-height:42px;padding:8px 16px;border:1px solid var(--mag-black);background:var(--mag-black);color:white;font-weight:700}
+.pageSyncMessage{margin:0 0 16px;padding:11px 14px;border:1px solid var(--mag-line);background:var(--mag-lime);font-size:11px;font-weight:600}
 .readingPage{border:1px solid var(--mag-line);border-radius:0;background:var(--mag-white);box-shadow:none}
+.pageJump{position:absolute;z-index:2;left:50%;bottom:68px;transform:translateX(-50%);display:flex;align-items:flex-end;gap:6px}
+.pageJump label{display:flex;align-items:center;gap:7px;color:var(--mag-muted);font-size:9px;font-weight:700;white-space:nowrap}
+.pageJump input{width:74px;height:34px;padding:4px 7px;border:1px solid var(--mag-line);background:var(--mag-paper);text-align:center;font:inherit;font-size:12px}
+.pageJump button{height:34px;padding:4px 11px;border:1px solid var(--mag-black);background:var(--mag-black);color:white;font-size:10px;font-weight:700}
 .reader{border:1px solid var(--mag-line);border-radius:0;background:var(--mag-white);box-shadow:none}
 .reader.live{border-color:var(--mag-black);background:var(--mag-lime);box-shadow:none}
 .reader.muted{background:#e9e8e2}
@@ -241,6 +261,9 @@ nav .mic.active{background:var(--mag-live)}
   .scheduleDetail{min-height:104px;padding:18px 118px 18px 16px}
   .scheduleDays{right:14px}
   .scheduleDays i{width:28px;height:28px}
+  .pagePlanFields{grid-template-columns:1fr 1fr}.pagePlanFields label:first-of-type{grid-column:1/-1}
+  .readingPlanSummary{align-items:flex-start;flex-direction:column}.readingPlanSummary>button{align-self:flex-end}
+  .readingPlanEditor{grid-template-columns:1fr 1fr}.readingPlanEditor label:first-child{grid-column:1/-1}.readingPlanEditor>button{grid-column:1/-1}
   h3{margin-top:54px}
   h3:after{display:none}
   .profileHero{align-items:flex-start;flex-wrap:wrap}.profileHero .avatar{width:78px;height:78px}.profileHero h1{font-size:27px}.editProfileButton{width:100%;margin:8px 0 0;justify-content:center}
