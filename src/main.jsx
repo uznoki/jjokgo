@@ -127,8 +127,13 @@ function Calendar(){
       <div><button type="button" onClick={()=>moveMonth(-1)} aria-label="이전 달">‹</button><button type="button" onClick={()=>moveMonth(1)} aria-label="다음 달">›</button></div>
     </div>
     <div className="cal" role="grid">
-      {["월","화","수","목","금","토","일"].map(x=><b key={x} role="columnheader">{x}</b>)}
-      {cells.map((day,index)=>day?<span key={`${year}-${month}-${day}`} role="gridcell" className={isCurrentMonth&&day===today.getDate()?"doing":isCurrentMonth&&completedDays.has(day)?"done":""} aria-label={`${month+1}월 ${day}일`}>{day}</span>:<span key={`empty-${index}`} className="empty" aria-hidden="true"/>)}
+      {["월","화","수","목","금","토","일"].map((label,index)=><b key={label} role="columnheader" className={index===5?"saturday":index===6?"sunday":""}>{label}</b>)}
+      {cells.map((day,index)=>{
+        const weekendClass=index%7===5?"saturday":index%7===6?"sunday":"";
+        if(!day)return <span key={`empty-${index}`} className={`empty ${weekendClass}`.trim()} aria-hidden="true"/>;
+        const statusClass=isCurrentMonth&&day===today.getDate()?"doing":isCurrentMonth&&completedDays.has(day)?"done":"";
+        return <span key={`${year}-${month}-${day}`} role="gridcell" className={`${weekendClass} ${statusClass}`.trim()} aria-label={`${month+1}월 ${day}일`}>{day}</span>;
+      })}
     </div>
   </section>
 }function My({session,setV}){const nickname=session.user.user_metadata?.nickname||session.user.email?.split("@")[0]||"쪽GO 사용자";async function logout(){await supabase.auth.signOut();setV("home")}return <><section className="profileHero"><div className="avatar"><UserRound/></div><div><small>MY 쪽GO</small><h1>{nickname}님</h1><p>{session.user.email}</p></div></section><button className="logout" onClick={logout}><LogOut/> 로그아웃</button><h3>이번 달 나의 읽기</h3><div className="stats"><div>시작 전<b>2권</b></div><div>읽는 중<b>3권</b></div><div>읽기 완료<b>1권</b></div></div><h3>나의 읽기 달력</h3><Calendar/><div className="due"><CalendarDays/><span><b>9월 12일까지</b><br/>17~19쪽 읽어주세요.</span></div><h3>참여 중인 방</h3><Card r={demoRooms[0]} f={()=>setV("rooms")}/><div className="demoNotice">현재 읽기방/달력은 데모 데이터예요. 다음 버전에서 실제 계정별 데이터로 연결합니다.</div></>}

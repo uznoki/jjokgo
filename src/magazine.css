@@ -98,15 +98,15 @@ h3:after{content:"  /  EDITOR'S SELECTION";float:right;color:var(--mag-muted);fo
 .calendarHead button:hover{background:var(--mag-black);color:white}
 .cal{max-width:none;padding:0;border:0;border-radius:0;background:transparent;gap:0}
 .cal b{padding:11px 4px;border-right:1px solid var(--mag-line);border-bottom:1px solid var(--mag-line);color:var(--mag-muted);font-size:10px;font-weight:600;letter-spacing:.06em}
-.cal b:nth-child(6){background:var(--mag-blue);color:#354b5d}
-.cal b:nth-child(7){background:var(--mag-live-soft);color:#a63c2a}
+.cal b.saturday{background:var(--mag-blue);color:#354b5d}
+.cal b.sunday{background:var(--mag-live-soft);color:#a63c2a}
 .cal b:nth-child(7){border-right:0}
 .cal span{min-height:62px;padding:10px;border-right:1px solid var(--mag-line);border-bottom:1px solid var(--mag-line);display:flex;align-items:flex-start;justify-content:flex-start;font-size:12px}
 .cal span:nth-child(7n){border-right:0}
 .cal span:nth-last-child(-n+7){border-bottom:0}
 .cal .empty{background:#efeee8}
-.cal span:nth-child(7n+6):not(.done):not(.doing){background:var(--mag-blue);color:#354b5d}
-.cal span:nth-child(7n):not(.done):not(.doing){background:var(--mag-live-soft);color:#a63c2a}
+.cal span.saturday:not(.done):not(.doing){background:var(--mag-blue);color:#354b5d}
+.cal span.sunday:not(.done):not(.doing){background:var(--mag-live-soft);color:#a63c2a}
 .cal .done{border-radius:0;background:var(--mag-black);color:white;box-shadow:none}
 .cal .done:after{content:"READ";margin-left:auto;font-size:7px;letter-spacing:.08em}
 .cal .doing{border-radius:0;background:var(--mag-live);color:white}
