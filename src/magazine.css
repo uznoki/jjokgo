@@ -42,6 +42,42 @@ header>button.headAccount{min-height:auto;padding:7px 0;border:0;border-radius:0
 header>button.headAccount:hover{transform:none;border:0;background:transparent;text-decoration:underline;text-underline-offset:5px}
 header>button.headAccount svg{width:15px}
 
+.profileHero{position:relative;padding:42px 0 28px;border-bottom:1px solid var(--mag-black)}
+.profileHero .avatar{position:relative;width:92px;height:92px;padding:0;border:1px solid var(--mag-black);border-radius:50%;overflow:hidden;background:var(--mag-blue);cursor:default}
+.profileHero .avatar img{width:100%;height:100%;object-fit:cover}
+.profileHero .avatar>span{position:absolute;right:0;bottom:0;width:31px;height:31px;display:grid;place-items:center;border:1px solid var(--mag-black);border-radius:50%;background:var(--mag-live);color:white}
+.profileHero .avatar>span svg{width:14px;height:14px}
+.profileHero h1{font-size:34px}
+.editProfileButton{margin-left:auto;padding:9px 0;border:0;border-bottom:1px solid var(--mag-black);background:transparent;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700}
+.editProfileButton svg{width:14px}
+.profileEditor{margin:18px 0 22px;padding:22px;border:1px solid var(--mag-black);background:var(--mag-white);display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:end}
+.profileFileInput{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.photoSelectButton{min-height:48px;padding:0 17px;border:1px solid var(--mag-black);background:var(--mag-blue);display:flex;align-items:center;gap:7px;font-weight:700}
+.photoSelectButton svg{width:17px}
+.profileEditor label{display:flex;flex-direction:column;gap:7px;font-size:11px;font-weight:700}
+.profileEditor label input{min-height:48px;padding:10px;border:0;border-bottom:1px solid var(--mag-black);background:transparent}
+.profileEditorActions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px}
+.profileEditorActions button{min-height:42px;padding:8px 15px;border:1px solid var(--mag-black);background:transparent;display:flex;align-items:center;gap:6px;font-weight:700}
+.profileEditorActions button:last-child{background:var(--mag-black);color:white}
+.profileEditorActions svg{width:15px}
+.profileMessage{margin:12px 0;padding:13px;border:1px solid var(--mag-black);background:var(--mag-blue);font-size:12px;font-weight:600}
+
+.libraryPage{padding-bottom:50px}
+.libraryHeading{padding:58px 0 38px;border-bottom:1px solid var(--mag-black)}
+.libraryHeading small{font-size:9px;font-weight:700;letter-spacing:.12em}
+.libraryHeading h1{margin:10px 0 14px;font-size:clamp(48px,8vw,88px)}
+.libraryHeading p{color:var(--mag-muted)}
+.librarySummary{min-height:70px;border-bottom:1px solid var(--mag-black);display:flex;align-items:baseline;gap:10px}
+.librarySummary b{font-size:28px;font-weight:500}.librarySummary span{font-size:11px;color:var(--mag-muted)}
+.libraryGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-left:1px solid var(--mag-line)}
+.libraryBook{min-height:180px;padding:20px;border:0;border-right:1px solid var(--mag-line);border-bottom:1px solid var(--mag-line);background:transparent;display:grid;grid-template-columns:104px 1fr auto;gap:18px;text-align:left;align-items:center}
+.libraryBook:hover{background:#efeee9}
+.libraryCover{width:104px;height:140px;border:1px solid var(--mag-line);background:var(--mag-blue);display:grid;place-items:center;overflow:hidden}
+.libraryCover img{width:100%;height:100%;object-fit:cover}.libraryCover svg{width:28px}
+.libraryBook>span{min-width:0;display:flex;flex-direction:column;gap:7px}.libraryBook span>small{color:var(--mag-live);font-size:9px;font-weight:700}.libraryBook span>b{font-size:19px;font-weight:500}.libraryBook span>em,.libraryBook span>i{color:var(--mag-muted);font-size:11px;font-style:normal}.libraryBook span>i{padding-top:7px;border-top:1px solid var(--mag-line)}
+.emptyLibrary{min-height:300px;border-bottom:1px solid var(--mag-black);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:var(--mag-muted)}
+.emptyLibrary svg{width:35px;height:35px}.emptyLibrary b{color:var(--mag-black)}
+
 h1,h2,h3,.auth h1{font-weight:500;letter-spacing:-.055em}
 h3{margin:68px 0 24px;padding-top:12px;border-top:1px solid var(--mag-black);font-size:14px;font-weight:700;letter-spacing:-.025em}
 h3:after{content:"  /  EDITOR'S SELECTION";float:right;color:var(--mag-muted);font-size:9px;font-weight:500;letter-spacing:.1em}
@@ -207,6 +243,9 @@ nav .mic.active{background:var(--mag-live)}
   .scheduleDays i{width:28px;height:28px}
   h3{margin-top:54px}
   h3:after{display:none}
+  .profileHero{align-items:flex-start;flex-wrap:wrap}.profileHero .avatar{width:78px;height:78px}.profileHero h1{font-size:27px}.editProfileButton{width:100%;margin:8px 0 0;justify-content:center}
+  .profileEditor{grid-template-columns:1fr}.profileEditorActions{grid-column:1}.profileEditorActions button{flex:1;justify-content:center}
+  .libraryGrid{grid-template-columns:1fr}.libraryBook{grid-template-columns:78px 1fr auto;min-height:142px;padding:15px}.libraryCover{width:78px;height:106px}
 }
 
 @media (min-width:700px){

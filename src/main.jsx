@@ -1,9 +1,10 @@
-import React,{useEffect,useState}from"react";
+import React,{useEffect,useRef,useState}from"react";
 import{createRoot}from"react-dom/client";
-import{Home,Users,Mic,BookOpen,UserRound,Lock,ChevronRight,CalendarDays,LogOut,Mail,KeyRound}from"lucide-react";
+import{Home,Users,Mic,BookOpen,UserRound,Lock,ChevronRight,CalendarDays,LogOut,Mail,KeyRound,Camera,Pencil,Save,X}from"lucide-react";
 import{supabase}from"./supabase";
 import{LiveRoom}from"./components/LiveRoom";
 import{CreateRoom,Rooms}from"./components/Rooms";
+import{Library}from"./components/Library";
 import{GuestJoin}from"./components/GuestJoin";
 import{BrandWordmark}from"./components/BrandWordmark";
 import{normalizeInviteCode}from"./services/readingRooms";
@@ -51,6 +52,7 @@ function App(){
   const isGuest=Boolean(session?.user?.is_anonymous);
   const openAuth=()=>setV("auth");
   const openRooms=()=>setV(session?"rooms":"auth");
+  const openLibrary=()=>setV(session&&!isGuest?"library":"auth");
   const cancelGuest=()=>{
     clearInviteFromUrl();
     setV("home");
@@ -77,7 +79,7 @@ function App(){
         <div className="mastNav" aria-label="주요 메뉴">
           <button onClick={()=>setV("home")}>JOURNAL</button>
           <button onClick={openRooms}>LIVE ROOMS</button>
-          <button disabled>LIBRARY</button>
+          <button onClick={openLibrary}>LIBRARY</button>
         </div>
         <button className="headAccount" onClick={()=>setV(accountView)}>
           <UserRound/>{isGuest?"게스트":session?"MY":"로그인"}
@@ -89,6 +91,7 @@ function App(){
         {v==="createRoom"&&!isGuest&&<CreateRoom setV={setV} session={session}/>}
         {v==="rooms"&&<Rooms setV={setV} open={openRoom} session={session} openAuth={openAuth}/>}
         {v==="room"&&<LiveRoom room={room} setView={setV} session={session}/>}
+        {v==="library"&&session&&!isGuest&&<Library session={session} openRoom={openRoom}/>}
         {v==="my"&&(session&&!isGuest?<My session={session} setV={setV}/>:<Auth setV={setV}/>)}
         {v==="auth"&&<Auth setV={setV}/>}
       </>}
@@ -97,7 +100,7 @@ function App(){
       <N i={<Home/>} t="홈" f={()=>setV("home")} active={v==="home"}/>
       <N i={<Users/>} t="쪽GO" f={openRooms} active={["rooms","createRoom","room"].includes(v)}/>
       <button className={`mic ${v==="room"?"active":""}`} aria-label="LIVE 독서방 열기" onClick={openRooms}><Mic/><small>LIVE</small></button>
-      <N i={<BookOpen/>} t="내 서재" disabled/>
+      <N i={<BookOpen/>} t="내 서재" f={openLibrary} active={v==="library"}/>
       <N i={<UserRound/>} t="MY" f={()=>setV(accountView)} active={["my","auth"].includes(v)}/>
     </nav>}
   </div>;
@@ -145,5 +148,107 @@ function Calendar(){
       </article>
     </div>
   </section>
-}function My({session,setV}){const nickname=session.user.user_metadata?.nickname||session.user.email?.split("@")[0]||"쪽GO 사용자";async function logout(){await supabase.auth.signOut();setV("home")}return <><section className="profileHero"><div className="avatar"><UserRound/></div><div><small>MY 쪽GO</small><h1>{nickname}님</h1><p>{session.user.email}</p></div></section><button className="logout" onClick={logout}><LogOut/> 로그아웃</button><h3>이번 달 나의 읽기</h3><div className="stats"><div>시작 전<b>2권</b></div><div>읽는 중<b>3권</b></div><div>읽기 완료<b>1권</b></div></div><h3>나의 읽기 달력</h3><Calendar/><div className="due"><CalendarDays/><span><b>9월 12일까지</b><br/>17~19쪽 읽어주세요.</span></div><h3>참여 중인 방</h3><Card r={demoRooms[0]} f={()=>setV("rooms")}/><div className="demoNotice">현재 읽기방/달력은 데모 데이터예요. 다음 버전에서 실제 계정별 데이터로 연결합니다.</div></>}
+}
+
+async function resizeProfileImage(file){
+  if(!file.type.startsWith("image/"))throw new Error("IMAGE_TYPE");
+  if(file.size>8*1024*1024)throw new Error("IMAGE_SIZE");
+  const objectUrl=URL.createObjectURL(file);
+  const image=await new Promise((resolve,reject)=>{
+    const element=new Image();
+    element.onload=()=>resolve(element);
+    element.onerror=()=>{URL.revokeObjectURL(objectUrl);reject(new Error("IMAGE_PROCESS"))};
+    element.src=objectUrl;
+  });
+  const scale=Math.min(1,512/Math.max(image.naturalWidth,image.naturalHeight));
+  const canvas=document.createElement("canvas");
+  canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
+  canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+  canvas.getContext("2d").drawImage(image,0,0,canvas.width,canvas.height);
+  URL.revokeObjectURL(objectUrl);
+  return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error("IMAGE_PROCESS")),"image/webp",.84));
+}
+
+function My({session,setV}){
+  const fallbackNickname=session.user.email?.split("@")[0]||"쪽GO 사용자";
+  const savedNickname=session.user.user_metadata?.nickname||fallbackNickname;
+  const savedAvatar=session.user.user_metadata?.avatar_url||"";
+  const fileRef=useRef(null);
+  const[nickname,setNickname]=useState(savedNickname);
+  const[avatarUrl,setAvatarUrl]=useState(savedAvatar);
+  const[photo,setPhoto]=useState(null);
+  const[preview,setPreview]=useState(savedAvatar);
+  const[editing,setEditing]=useState(false);
+  const[saving,setSaving]=useState(false);
+  const[message,setMessage]=useState("");
+
+  useEffect(()=>()=>{if(preview?.startsWith("blob:"))URL.revokeObjectURL(preview)},[preview]);
+
+  function choosePhoto(event){
+    const file=event.target.files?.[0];
+    if(!file)return;
+    if(!file.type.startsWith("image/")||file.size>8*1024*1024){setMessage("8MB 이하의 이미지 파일을 선택해주세요.");return;}
+    if(preview?.startsWith("blob:"))URL.revokeObjectURL(preview);
+    setPhoto(file);
+    setPreview(URL.createObjectURL(file));
+    setMessage("");
+  }
+
+  function cancelEdit(){
+    if(preview?.startsWith("blob:"))URL.revokeObjectURL(preview);
+    setNickname(savedNickname);setAvatarUrl(savedAvatar);setPreview(savedAvatar);setPhoto(null);setMessage("");setEditing(false);
+    if(fileRef.current)fileRef.current.value="";
+  }
+
+  async function saveProfile(event){
+    event.preventDefault();
+    const cleanNickname=nickname.trim();
+    if(cleanNickname.length<2){setMessage("닉네임은 2자 이상 입력해주세요.");return;}
+    setSaving(true);setMessage("");
+    try{
+      let nextAvatar=avatarUrl;
+      if(photo){
+        const resized=await resizeProfileImage(photo);
+        const path=`${session.user.id}/avatar.webp`;
+        const{error:uploadError}=await supabase.storage.from("avatars").upload(path,resized,{contentType:"image/webp",upsert:true,cacheControl:"3600"});
+        if(uploadError)throw uploadError;
+        const{data}=supabase.storage.from("avatars").getPublicUrl(path);
+        nextAvatar=`${data.publicUrl}?v=${Date.now()}`;
+      }
+      const{data,error}=await supabase.auth.updateUser({data:{nickname:cleanNickname,avatar_url:nextAvatar}});
+      if(error)throw error;
+      setNickname(data.user.user_metadata?.nickname||cleanNickname);
+      setAvatarUrl(data.user.user_metadata?.avatar_url||nextAvatar);
+      setPreview(data.user.user_metadata?.avatar_url||nextAvatar);
+      setPhoto(null);setEditing(false);setMessage("프로필을 저장했어요.");
+      if(fileRef.current)fileRef.current.value="";
+    }catch(error){
+      console.error("Profile update failed",error);
+      const storageMissing=String(error?.message||"").toLowerCase().includes("bucket");
+      setMessage(storageMissing?"프로필 사진 저장소 설정이 아직 적용되지 않았어요.":"프로필을 저장하지 못했어요. 잠시 후 다시 시도해주세요.");
+    }finally{setSaving(false)}
+  }
+
+  async function logout(){await supabase.auth.signOut();setV("home")}
+  return <>
+    <section className="profileHero">
+      <button type="button" className="avatar" onClick={()=>editing&&fileRef.current?.click()} aria-label={editing?"프로필 사진 선택":"프로필 사진"}>
+        {preview?<img src={preview} alt="내 프로필"/>:<UserRound/>}{editing&&<span><Camera/></span>}
+      </button>
+      <div><small>MY 쪽GO</small><h1>{nickname}님</h1><p>{session.user.email}</p></div>
+      {!editing&&<button type="button" className="editProfileButton" onClick={()=>{setEditing(true);setMessage("")}}><Pencil/> 프로필 수정</button>}
+    </section>
+    {editing&&<form className="profileEditor" onSubmit={saveProfile}>
+      <input ref={fileRef} className="profileFileInput" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" onChange={choosePhoto}/>
+      <button type="button" className="photoSelectButton" onClick={()=>fileRef.current?.click()}><Camera/> 사진 등록·변경</button>
+      <label>닉네임<input required minLength="2" maxLength="30" value={nickname} onChange={event=>setNickname(event.target.value)} autoComplete="nickname"/></label>
+      <div className="profileEditorActions"><button type="button" onClick={cancelEdit}><X/> 취소</button><button disabled={saving}><Save/> {saving?"저장 중…":"저장"}</button></div>
+    </form>}
+    {message&&<div className="profileMessage" role="status">{message}</div>}
+    <button className="logout" onClick={logout}><LogOut/> 로그아웃</button>
+    <h3>이번 달 나의 읽기</h3><div className="stats"><div>시작 전<b>2권</b></div><div>읽는 중<b>3권</b></div><div>읽기 완료<b>1권</b></div></div>
+    <h3>나의 읽기 달력</h3><Calendar/><div className="due"><CalendarDays/><span><b>9월 12일까지</b><br/>17~19쪽 읽어주세요.</span></div>
+    <h3>참여 중인 방</h3><Card r={demoRooms[0]} f={()=>setV("rooms")}/><div className="demoNotice">현재 읽기방/달력은 데모 데이터예요. 다음 버전에서 실제 계정별 데이터로 연결합니다.</div>
+  </>;
+}
 createRoot(document.getElementById("root")).render(<App/>);

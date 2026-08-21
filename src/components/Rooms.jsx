@@ -6,6 +6,9 @@ import BookPicker from "./BookPicker";
 
 function roomError(error){
   const message=error?.message||"";
+  const lowerMessage=message.toLowerCase();
+  if((lowerMessage.includes("jwt")&&lowerMessage.includes("issued"))||lowerMessage.includes("not yet valid"))return "로그인 시간이 맞지 않아 연결을 새로 고쳐야 해요. 기기의 날짜·시간을 자동 설정한 뒤 다시 로그인해주세요.";
+  if(lowerMessage.includes("jwt expired")||lowerMessage.includes("invalid jwt"))return "로그인 시간이 만료됐어요. 다시 로그인한 뒤 방을 만들어주세요.";
   if(message.includes("INVALID_INVITE_CODE"))return "초대 코드를 확인해주세요. 일치하는 읽기방이 없어요.";
   if(message.includes("REGISTERED_USER_REQUIRED"))return "방과 책 만들기는 정식 로그인 후 이용할 수 있어요.";
   if(message.includes("INVALID_ISBN"))return "ISBN 자리 수를 확인해주세요.";
@@ -193,6 +196,13 @@ export function CreateRoom({setV,session}){
     if(!selectedBook){setMessage("함께 읽을 책을 검색하거나 직접 등록해주세요.");return;}
     setBusy(true);
     setMessage("");
+    const{data:refreshData,error:refreshError}=await supabase.auth.refreshSession();
+    const activeSession=refreshData?.session;
+    if(refreshError||!activeSession){
+      setMessage("로그인 연결을 새로 고치지 못했어요. 다시 로그인한 뒤 시도해주세요.");
+      setBusy(false);
+      return;
+    }
     const {data:bookResult,error:bookError}=await supabase.rpc("save_catalog_book",{
       p_title:selectedBook.title,
       p_author:selectedBook.author||null,
@@ -210,7 +220,7 @@ export function CreateRoom({setV,session}){
       setBusy(false);
       return;
     }
-    const {data,error}=await supabase.from("reading_rooms").insert({name:name.trim(),book_id:bookData.id,owner_id:session.user.id,is_private:true}).select("id,name,invite_code").single();
+    const {data,error}=await supabase.from("reading_rooms").insert({name:name.trim(),book_id:bookData.id,owner_id:activeSession.user.id,is_private:true}).select("id,name,invite_code").single();
     if(error){
       setMessage("방을 만들지 못했어요: "+roomError(error));
       setBusy(false);
