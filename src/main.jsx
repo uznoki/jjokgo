@@ -86,9 +86,9 @@ function App(){
           <BrandWordmark/>
         </button>
         <div className="mastNav" aria-label="주요 메뉴">
-          <button onClick={()=>setV("home")}>JOURNAL</button>
-          <button onClick={openRooms}>LIVE ROOMS</button>
-          <button onClick={openLibrary}>LIBRARY</button>
+          <button className={v==="home"?"active":""} aria-current={v==="home"?"page":undefined} onClick={()=>setV("home")}>JOURNAL</button>
+          <button className={["modes","flow","rooms","createRoom","room","guest"].includes(v)?"active":""} aria-current={["modes","flow","rooms","createRoom","room","guest"].includes(v)?"page":undefined} onClick={openModes}>LIVE ROOMS</button>
+          <button className={v==="library"?"active":""} aria-current={v==="library"?"page":undefined} onClick={openLibrary}>LIBRARY</button>
         </div>
         <button className="headAccount" onClick={()=>setV(accountView)}>
           <UserRound/>{isGuest?"게스트":session?"MY":"로그인"}
