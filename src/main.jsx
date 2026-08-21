@@ -71,7 +71,7 @@ function App(){
     <main>
       <header>
         <button className="brand" onClick={()=>setV("home")} aria-label="쪽GO 홈으로">
-          <img className="brandImage" src="/jjokgo-wordmark.svg" alt="" aria-hidden="true"/>
+          <img className="brandImage" src="/jjokgo-wordmark-orange.svg" alt="" aria-hidden="true"/>
         </button>
         <div className="mastNav" aria-label="주요 메뉴">
           <button onClick={()=>setV("home")}>JOURNAL</button>
