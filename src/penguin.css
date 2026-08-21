@@ -1,50 +1,50 @@
-/* 쪽GO Penguin-inspired v1
-   출판사 고유 로고·이미지를 복제하지 않고, 책 중심 편집 구조와
-   검정·흰색·오렌지 대비를 LIVE 독서 제품에 맞게 재해석한다. */
+/* 쪽GO Forest Editorial v1
+   책 중심 편집 구조는 유지하되, 오래 머물기 좋은 숲·종이 색과
+   작은 살구색 LIVE 신호로 차분하게 재해석한다. */
 
 :root{
-  --pg-orange:#f26b21;
-  --pg-orange-dark:#d95612;
-  --pg-black:#0b0c0c;
-  --pg-ink:#171717;
-  --pg-paper:#fff;
-  --pg-cream:#f6f1e7;
-  --pg-mint:#dfeadf;
-  --pg-blue:#dce8ee;
-  --pg-yellow:#f3dc79;
-  --pg-line:#171717;
+  --pg-orange:#ed805f;
+  --pg-orange-dark:#cf684b;
+  --pg-black:#244d3f;
+  --pg-ink:#252623;
+  --pg-paper:#fbf7ee;
+  --pg-cream:#f4efe5;
+  --pg-mint:#e5eee3;
+  --pg-blue:#dde9e5;
+  --pg-yellow:#f0e2ba;
+  --pg-line:#a9b6ad;
   --g:var(--pg-black);
   --iv:var(--pg-paper);
   --canvas:var(--pg-paper);
   --paper:var(--pg-paper);
   --ink:var(--pg-ink);
-  --line:#d8d8d3;
+  --line:#d9d4c8;
 }
 
 body{background:var(--pg-cream);color:var(--pg-ink)}
 .app{background:var(--pg-paper)}
 main{max-width:1240px;padding-left:32px;padding-right:32px}
 
-.readingBanner{height:34px;padding:0 24px;background:var(--pg-black);color:white;display:flex;align-items:center;justify-content:center;gap:12px;font-size:11px;letter-spacing:.01em}
+.readingBanner{height:34px;padding:0 24px;background:var(--pg-black);color:#f7f1e7;display:flex;align-items:center;justify-content:center;gap:12px;font-size:11px;letter-spacing:.01em}
 .readingBanner b{color:var(--pg-orange);font-size:11px}
-header{height:88px;border-bottom:2px solid var(--pg-black)}
+header{height:88px;border-bottom:1px solid var(--line)}
 .brand{color:var(--pg-black);font-size:32px;font-weight:900;letter-spacing:-.07em}
 .brand span,.authBrand span{color:var(--pg-orange)}
-header>button.headAccount{min-height:46px;padding:8px 18px;border:2px solid var(--pg-black);border-radius:32px;background:var(--pg-black);color:white;font-weight:800}
+header>button.headAccount{min-height:46px;padding:8px 18px;border:1px solid var(--pg-black);border-radius:32px;background:transparent;color:var(--pg-black);font-weight:800}
 header>button.headAccount:hover{transform:none;border-color:var(--pg-orange);background:var(--pg-orange)}
 h1,h2,h3,.auth h1{font-weight:800;letter-spacing:-.055em}
 h3{margin-top:54px;font-size:28px}
 .back{font-weight:800;text-decoration:underline;text-underline-offset:4px}
 
-/* Orange editorial hero and bookish bento composition */
-.hero{min-height:500px;height:auto;margin:24px 0 28px;padding:54px;border-radius:0;background:var(--pg-orange);gap:48px}
+/* Calm editorial hero and bookish bento composition */
+.hero{min-height:500px;height:auto;margin:24px 0 28px;padding:54px;border:1px solid var(--line);border-radius:24px;background:var(--pg-mint);gap:48px}
 .hero>div:first-child{flex:1 1 55%}
 .hero h1{margin:12px 0 24px;color:var(--pg-black);font-size:clamp(58px,8vw,88px);font-weight:900;line-height:.94;letter-spacing:-.075em}
 .hero p{color:var(--pg-black);font-size:18px;font-weight:600;line-height:1.55}
-.heroEyebrow{padding:7px 12px;border-radius:0;background:var(--pg-black);color:white;font-size:11px;font-weight:800;letter-spacing:.08em}
+.heroEyebrow{padding:7px 12px;border-radius:999px;background:var(--pg-black);color:white;font-size:11px;font-weight:800;letter-spacing:.08em}
 .heroArt{flex:0 0 min(40vw,450px);width:min(40vw,450px);height:350px;display:grid;grid-template-columns:1.45fr 1fr;grid-template-rows:1fr 1fr;gap:10px;border-radius:0;background:transparent;box-shadow:none;transform:none;font-size:initial!important}
 .heroArt small{position:static;right:auto;bottom:auto;padding:0;border:0;background:transparent;color:inherit;font-size:10px;font-weight:800;letter-spacing:.08em}
-.editorialTile{position:relative;overflow:hidden;padding:22px;border-radius:0 0 18px 18px;background:linear-gradient(180deg,#fff 0%,#fff 48%,var(--pg-black) 100%);color:white;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start}
+.editorialTile{position:relative;overflow:hidden;padding:22px;border:1px solid rgba(36,77,63,.18);border-radius:18px;background:linear-gradient(180deg,#fffdf8 0%,#fffdf8 48%,var(--pg-black) 100%);color:white;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;box-shadow:0 14px 30px rgba(36,77,63,.08)}
 .editorialTile:before{content:"";position:absolute;inset:0 0 42%;background:repeating-linear-gradient(90deg,#f7f0e5 0 14px,#ded4c5 14px 16px);opacity:.9}
 .editorialTile>*{position:relative;z-index:1}
 .editorialTile b{font-size:20px;line-height:1.1}
@@ -56,31 +56,31 @@ h3{margin-top:54px;font-size:28px}
 .tilePage:before{background:var(--pg-blue)}
 .tilePeople:before{background:var(--pg-yellow)}
 
-.welcome{min-height:76px;border:2px solid var(--pg-black);border-radius:0;background:white;box-shadow:none}
+.welcome{min-height:76px;border:1px solid var(--line);border-radius:18px;background:#fffdf8;box-shadow:none}
 .welcome:hover{transform:none;box-shadow:none;background:var(--pg-cream)}
 .homeActions{grid-template-columns:1.3fr 1fr;gap:12px}
-.homeActions button{border-radius:0;box-shadow:none!important;transform:none!important}
+.homeActions button{border-radius:18px;box-shadow:none!important;transform:none!important}
 .primaryAction{min-height:160px;border:0;background:var(--pg-black);box-shadow:none}
 .primaryAction .actionIcon{border-radius:50%;background:var(--pg-orange);color:var(--pg-black)}
 .primaryAction small,.primaryAction em{color:#e2e2df}
-.secondaryAction{min-height:96px;border:2px solid var(--pg-black);background:white;box-shadow:none}
+.secondaryAction{min-height:96px;border:1px solid var(--line);background:#fffdf8;box-shadow:none}
 .secondaryAction>svg:first-child{color:var(--pg-orange)}
-.codeAction{min-height:52px;border:2px solid var(--pg-black);background:var(--pg-orange);color:var(--pg-black)}
+.codeAction{min-height:52px;border:1px solid rgba(36,77,63,.2);background:var(--pg-yellow);color:var(--pg-black)}
 
 /* Books are the visual content, with simple publishing-style bands. */
 .books{gap:14px}
-.books>div{padding:16px;border:2px solid var(--pg-black);border-radius:0;background:white;box-shadow:none}
+.books>div{padding:16px;border:1px solid var(--line);border-radius:18px;background:#fffdf8;box-shadow:none}
 .books>div:nth-child(2){background:var(--pg-mint)}
 .books>div:nth-child(3){background:var(--pg-blue)}
-.books .cover{height:170px;border-radius:0;background:var(--pg-orange);font-size:42px}
+.books .cover{height:170px;border-radius:12px;background:#f5c9b9;font-size:42px}
 .books>div:nth-child(2) .cover{background:var(--pg-yellow)}
 .books>div:nth-child(3) .cover{background:var(--pg-black)}
 .books strong{color:var(--pg-black)}
 .bar{height:5px;border-radius:0;background:rgba(11,12,12,.16)}
 .bar i{background:var(--pg-orange)}
-.card{min-height:100px;border:2px solid var(--pg-black);border-radius:0;background:white;box-shadow:none}
+.card{min-height:100px;border:1px solid var(--line);border-radius:18px;background:#fffdf8;box-shadow:none}
 .card:hover{transform:none;border-color:var(--pg-orange);box-shadow:none}
-.cal{border:2px solid var(--pg-black);border-radius:0;background:white}
+.cal{border:1px solid var(--line);border-radius:18px;background:#fffdf8}
 .cal .done{background:var(--pg-black);box-shadow:none}
 .cal .doing{background:var(--pg-orange)}
 
@@ -88,54 +88,54 @@ h3{margin-top:54px;font-size:28px}
 .auth{max-width:540px}
 .authBrand{color:var(--pg-black);font-size:34px;font-weight:900}
 .auth h1{font-size:clamp(40px,7vw,58px);line-height:1}
-.authTabs,.roomTabs{padding:0;border:2px solid var(--pg-black);border-radius:0;background:white}
+.authTabs,.roomTabs{padding:4px;border:1px solid var(--line);border-radius:16px;background:#fffdf8}
 .authTabs button,.roomTabs button{min-height:50px;border-radius:0;font-weight:800}
-.authTabs .active,.roomTabs button.active{background:var(--pg-orange);color:var(--pg-black);box-shadow:none}
-.auth label input,.auth .createRoomForm input,.bookPicker input,.bookEditor input{border:2px solid var(--pg-black);border-radius:0;background:white}
+.authTabs .active,.roomTabs button.active{border-radius:12px;background:var(--pg-mint);color:var(--pg-black);box-shadow:none}
+.auth label input,.auth .createRoomForm input,.bookPicker input,.bookEditor input{border:1px solid var(--line);border-radius:14px;background:#fffdf8}
 .auth label input:focus,.auth .createRoomForm input:focus,.bookPicker input:focus,.bookEditor input:focus{border-color:var(--pg-orange);box-shadow:0 0 0 3px rgba(242,107,33,.18)}
 .wide{border-radius:32px;background:var(--pg-black);box-shadow:none}
 .wide:hover{transform:none;background:var(--pg-orange);color:var(--pg-black);filter:none}
 .wide:active{transform:scale(.99);box-shadow:none}
-.authMsg,.roomMessage{border:2px solid var(--pg-black);border-radius:0;background:var(--pg-yellow);color:var(--pg-black)}
-.guestBadge{border-radius:0;background:var(--pg-orange);color:var(--pg-black)}
+.authMsg,.roomMessage{border:1px solid #d9c98e;border-radius:14px;background:var(--pg-yellow);color:var(--pg-black)}
+.guestBadge{border-radius:999px;background:#f5c9b9;color:var(--pg-black)}
 
-.joinRoomForm{min-height:68px;border:2px solid var(--pg-black);border-radius:32px;background:white;box-shadow:none}
+.joinRoomForm{min-height:68px;border:1px solid var(--line);border-radius:18px;background:#fffdf8;box-shadow:none}
 .joinRoomForm button{border-radius:28px;background:var(--pg-black);box-shadow:none}
-.roomListCard{border:2px solid var(--pg-black);border-radius:0;background:white;box-shadow:none}
+.roomListCard{border:1px solid var(--line);border-radius:18px;background:#fffdf8;box-shadow:none}
 .roomListCard:hover{transform:none;border-color:var(--pg-orange);box-shadow:none}
-.roomCardOpen .thumb{border-radius:0;background:var(--pg-orange)}
+.roomCardOpen .thumb{border-radius:12px;background:var(--pg-mint)}
 .roomOwnerActions{background:var(--pg-cream)}
 .inviteCode,.editBookButton{border-color:var(--pg-black);background:transparent}
-.emptyRooms{border:2px solid var(--pg-black);border-radius:0;background:var(--pg-cream)}
-.bookPicker{border:2px solid var(--pg-black);border-radius:0;background:var(--pg-cream)}
-.bookEditor{border:2px solid var(--pg-black);border-radius:0;background:var(--pg-mint)}
-.bookSearch,.bookResults{border:2px solid var(--pg-black);border-radius:0;background:white}
+.emptyRooms{border:1px dashed var(--line);border-radius:18px;background:var(--pg-cream)}
+.bookPicker{border:1px solid var(--line);border-radius:18px;background:var(--pg-cream)}
+.bookEditor{border:1px solid var(--line);border-radius:18px;background:var(--pg-mint)}
+.bookSearch,.bookResults{border:1px solid var(--line);border-radius:14px;background:#fffdf8}
 .bookSearch button,.manualBookSelect{border-radius:28px;background:var(--pg-black)}
-.manualBookToggle{border:2px solid var(--pg-black);border-radius:0;background:var(--pg-orange);color:var(--pg-black)}
-.selectedBook{border:2px solid var(--pg-black);border-radius:0;background:var(--pg-yellow)}
+.manualBookToggle{border:1px solid var(--line);border-radius:14px;background:#f5c9b9;color:var(--pg-black)}
+.selectedBook{border:1px solid #d9c98e;border-radius:14px;background:var(--pg-yellow)}
 
 /* LIVE keeps the publishing contrast but prioritizes connection state. */
-.liveRoomView .room{padding:24px;border:0;background:var(--pg-orange);color:var(--pg-black)}
+.liveRoomView .room{padding:24px;border:1px solid var(--line);border-radius:20px;background:var(--pg-mint);color:var(--pg-black)}
 .liveRoomView .room h2,.liveRoomView .room b{color:var(--pg-black)}
 .liveRoomView .room p{color:#3c2112}
 .liveRoomView .room .thumb.big{border-radius:0;background:white;box-shadow:none}
-.liveConnection{border:2px solid var(--pg-black);border-radius:0;background:white}
+.liveConnection{border:1px solid var(--line);border-radius:16px;background:#fffdf8}
 .liveConnection.connecting{background:var(--pg-yellow)}
-.liveConnection.error,.liveConnection.closed{background:#ffe3da}
+.liveConnection.error,.liveConnection.closed{border-color:#e8a895;background:#fff0eb}
 .liveRoomView>.demoNotice{border-radius:0;background:var(--pg-black);color:white}
-.readingPage{border:2px solid var(--pg-black);border-radius:0;background:white;box-shadow:none}
+.readingPage{border:1px solid var(--line);border-radius:20px;background:#fffdf8;box-shadow:none}
 .pageNumber{color:var(--pg-black)}
-.reader{border:2px solid var(--pg-black);border-radius:32px;background:white;box-shadow:none}
-.reader.live{border-color:var(--pg-black);background:var(--pg-orange);box-shadow:none}
+.reader{border:1px solid var(--line);border-radius:32px;background:#fffdf8;box-shadow:none}
+.reader.live{border-color:#dc7354;background:#f5c9b9;box-shadow:none}
 .reader.muted{background:var(--pg-cream)}
-.readingActions .secondary{border:2px solid var(--pg-black);border-radius:0;background:white;color:var(--pg-black);font-weight:800}
+.readingActions .secondary{border:1px solid var(--line);border-radius:14px;background:#fffdf8;color:var(--pg-black);font-weight:800}
 .readingActions .wide{border-radius:32px}
-.liveButton.live{background:var(--pg-orange);color:var(--pg-black)}
+.liveButton.live{background:var(--pg-orange);color:#33170f}
 .liveButton.muted{background:var(--pg-black)}
-.liveHelp{border:2px solid var(--pg-black);border-radius:0;background:var(--pg-cream)}
+.liveHelp{border:1px solid var(--line);border-radius:16px;background:var(--pg-cream)}
 .liveHelp.live{border-color:var(--pg-black);background:var(--pg-mint);color:var(--pg-black)}
 
-nav{border-top:2px solid var(--pg-black);background:rgba(255,255,255,.97)}
+nav{border-top:1px solid var(--line);background:rgba(251,247,238,.97)}
 nav button{border-radius:32px}
 nav button.active{background:var(--pg-orange);color:var(--pg-black)}
 nav .mic{border-color:white;border-radius:50%;background:var(--pg-black);box-shadow:none;transform:none}
