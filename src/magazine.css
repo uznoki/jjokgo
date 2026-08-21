@@ -228,6 +228,7 @@ h3:after{content:"  /  EDITOR'S SELECTION";float:right;color:var(--mag-muted);fo
 .roomListCard:hover{transform:none;border-color:var(--mag-black);box-shadow:none;background:#efeee9}
 .roomCardOpen .thumb{border-radius:0;background:var(--mag-blue)}
 .roomOwnerActions{background:#ecebe5}
+.roomOwnerActions .editRoomButton{background:var(--mag-lime);color:var(--mag-black)}
 .emptyRooms{border:1px solid var(--mag-line);border-radius:0;background:transparent}
 .bookPicker,.bookEditor,.bookSearch,.bookResults{border:1px solid var(--mag-line);border-radius:0;background:var(--mag-white)}
 .manualBookToggle,.selectedBook{border:1px solid var(--mag-black);border-radius:0;background:var(--mag-lime);color:var(--mag-black)}

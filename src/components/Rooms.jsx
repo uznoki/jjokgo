@@ -45,8 +45,8 @@ function RoomCard({room,onOpen,showInvite=false,onEditBook,onEditName}){
       <ChevronRight/>
     </button>
     {showInvite&&<div className="roomOwnerActions">
+      <button className="editRoomButton" onClick={()=>onEditName(room)}><Pencil/> 방 이름 수정</button>
       {room.invite_code&&<button className="inviteCode" onClick={copyCode} aria-label="게스트 초대 링크 복사"><Copy/> {copied?"링크 복사됨":room.invite_code}</button>}
-      <button className="editBookButton" onClick={()=>onEditName(room)}><Pencil/> 방 이름 수정</button>
       {room.books&&<button className="editBookButton" onClick={()=>onEditBook(room.books)}><Pencil/> 책 정보 보완</button>}
     </div>}
   </div>;
