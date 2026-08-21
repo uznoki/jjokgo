@@ -1,17 +1,10 @@
 import{useEffect,useState}from"react";
 import{Clock,Pencil,Plus,Save,Trash2,X}from"lucide-react";
 import{supabase}from"../supabase";
+import{fetchReadingSchedules,normalizeSchedule,sortSchedules}from"../services/readingSchedules";
 
 const WEEKDAYS=["월","화","수","목","금","토","일"];
 const EMPTY_FORM={title:"",weekdays:[],start_time:"20:30",end_time:"21:30",is_active:true};
-
-function cleanTime(value=""){
-  return value.slice(0,5);
-}
-
-function normalizeSchedule(schedule){
-  return{...schedule,start_time:cleanTime(schedule.start_time),end_time:cleanTime(schedule.end_time)};
-}
 
 export function ScheduleManager({session,onSchedulesChange}){
   const[schedules,setSchedules]=useState([]);
@@ -27,10 +20,15 @@ export function ScheduleManager({session,onSchedulesChange}){
     let active=true;
     async function loadSchedules(){
       setLoading(true);setMessage("");
-      const{data,error}=await supabase.from("reading_schedules").select("id,title,weekdays,start_time,end_time,is_active").eq("user_id",session.user.id).order("start_time");
+      try{
+        const next=await fetchReadingSchedules(session.user.id);
+        if(!active)return;
+        setSchedules(next);onSchedulesChange(next);
+      }catch(error){
+        if(!active)return;
+        console.error("Schedule load failed",error);setMessage("일정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.");setSchedules([]);onSchedulesChange([]);
+      }
       if(!active)return;
-      if(error){console.error("Schedule load failed",error);setMessage("일정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.");setSchedules([]);onSchedulesChange([])}
-      else{const next=(data||[]).map(normalizeSchedule);setSchedules(next);onSchedulesChange(next)}
       setLoading(false);
     }
     loadSchedules();
@@ -68,8 +66,7 @@ export function ScheduleManager({session,onSchedulesChange}){
       const{data,error}=await query.select("id,title,weekdays,start_time,end_time,is_active").single();
       if(error)throw error;
       const saved=normalizeSchedule(data);
-      const next=editingId?schedules.map(item=>item.id===editingId?saved:item):[...schedules,saved];
-      next.sort((a,b)=>a.start_time.localeCompare(b.start_time));
+      const next=sortSchedules(editingId?schedules.map(item=>item.id===editingId?saved:item):[...schedules,saved]);
       setSchedules(next);onSchedulesChange(next);setFormOpen(false);setEditingId(null);setForm(EMPTY_FORM);setMessage("일정을 저장했어요.");
     }catch(error){console.error("Schedule save failed",error);setMessage("일정을 저장하지 못했어요. 잠시 후 다시 시도해주세요.")}
     finally{setSaving(false)}
