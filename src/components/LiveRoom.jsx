@@ -144,7 +144,7 @@ export function LiveRoom({room,setView,session}){
       <div>
         <h2>{room.name} {room.is_private?"🔒":""}</h2>
         <b>{room.books?.title||"책 정보"}</b>
-        <p>🎙 LIVE 함께 읽기 · {connectedCount}명 연결</p>
+        <p>쪽GO PAGE · 🎙 LIVE · {connectedCount}명 연결</p>
       </div>
     </section>
 
@@ -205,7 +205,7 @@ export function LiveRoom({room,setView,session}){
     <div className="readingActions">
       <button className="secondary" onClick={()=>changePage(pageRef.current-1)} disabled={page<=1}>← 이전 쪽</button>
       <button className={`wide liveButton ${live.micState}`} onClick={live.toggleMic} disabled={isConnecting||micBusy} aria-pressed={live.micState==="live"}>
-        {micBusy?"마이크 권한 확인 중…":live.micState==="live"?"🔴 내 마이크 음소거":live.micState==="muted"?"🎙 음소거 해제":"🎙 LIVE 함께 읽기"}
+        {micBusy?"마이크 권한 확인 중…":live.micState==="live"?"🔴 내 마이크 음소거":live.micState==="muted"?"🎙 음소거 해제":"🎙 PAGE LIVE 시작"}
       </button>
       <button className="secondary" onClick={()=>changePage(pageRef.current+1)} disabled={page>=maximumPage}>다음 쪽 →</button>
     </div>
@@ -215,7 +215,7 @@ export function LiveRoom({room,setView,session}){
       {live.micState==="muted"&&"🔇 내 마이크는 음소거 상태예요. 다른 참여자의 목소리는 계속 들을 수 있어요."}
       {live.micState==="requesting"&&"브라우저의 마이크 사용 요청을 확인해주세요."}
       {live.micState==="error"&&live.message}
-      {live.micState==="idle"&&"🎧 LIVE 함께 읽기를 누르면 마이크가 켜지고 서로의 목소리를 들을 수 있어요."}
+      {live.micState==="idle"&&"🎧 PAGE LIVE 시작을 누르면 마이크가 켜지고 서로의 목소리를 들을 수 있어요."}
     </div>
 
     {live.remoteStreams.map(item=><RemoteAudio

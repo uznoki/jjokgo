@@ -147,7 +147,8 @@ export function Rooms({setV,open,session,openAuth}){
 
   const visibleRooms=activeTab==="joined"?joinedRooms:ownedRooms;
   return <>
-    <h1>함께 읽기방</h1>
+    <div className="roomFormatLabel">쪽GO PAGE · LIVE ROOMS</div>
+    <h1>PAGE 읽기방</h1>
     <form className="joinRoomForm" onSubmit={joinRoom}>
       <Lock/>
       <input
@@ -179,7 +180,7 @@ export function Rooms({setV,open,session,openAuth}){
     }
     {!busy&&visibleRooms.map(room=><RoomCard key={room.id} room={room} onOpen={open} showInvite={activeTab==="owned"} onEditBook={setEditingBook}/>)}
 
-    {!isGuest&&<button className="wide" onClick={()=>session?setV("createRoom"):openAuth()}>+ 함께 읽기방 만들기</button>}
+    {!isGuest&&<button className="wide" onClick={()=>session?setV("createRoom"):openAuth()}>+ PAGE 읽기방 만들기</button>}
   </>;
 }
 
@@ -249,7 +250,7 @@ export function CreateRoom({setV,session}){
 
   if(createdRoom){
     return <section className="auth createdRoom">
-      <h1>읽기방이 만들어졌어요!</h1>
+      <h1>PAGE 읽기방이 만들어졌어요!</h1>
       <p>함께 읽을 사람에게 게스트 초대 링크를 보내주세요.</p>
       <button className="createdInviteCode" onClick={copyInvite}><Copy/><b>{createdRoom.invite_code}</b><small>{copied?"초대 링크가 복사됐어요":"눌러서 게스트 링크 복사"}</small></button>
       <button className="wide" onClick={()=>setV("rooms")}>읽기방 목록으로</button>
@@ -257,9 +258,10 @@ export function CreateRoom({setV,session}){
   }
 
   return <section className="auth">
-    <button className="back" onClick={()=>setV("rooms")}>‹ 함께 읽기방</button>
-    <h1>함께 읽기방 만들기</h1>
-    <p>같이 읽을 사람들과 새로운 LIVE 독서방을 만들어보세요.</p>
+    <button className="back" onClick={()=>setV("rooms")}>‹ PAGE 읽기방</button>
+    <div className="roomFormatLabel">쪽GO PAGE · EACH BOOK, ONE VOICE</div>
+    <h1>PAGE 읽기방 만들기</h1>
+    <p>같은 책을 각자 준비하고, 서로의 목소리를 들으며 읽는 LIVE 독서방이에요.</p>
     <div className="createRoomForm">
       <label>방 이름<input required maxLength="100" value={name} onChange={event=>setName(event.target.value)} placeholder="예: 우리 가족 책방"/></label>
       <BookPicker selected={selectedBook} onSelect={setSelectedBook}/>
