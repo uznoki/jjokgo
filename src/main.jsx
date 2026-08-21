@@ -1,6 +1,6 @@
 import React,{useEffect,useRef,useState}from"react";
 import{createRoot}from"react-dom/client";
-import{Home,Users,Mic,BookOpen,UserRound,Lock,ChevronRight,CalendarDays,LogOut,Mail,KeyRound,Camera,Pencil,Save,X}from"lucide-react";
+import{Home,Users,Mic,BookOpen,UserRound,Lock,ChevronRight,LogOut,Mail,KeyRound,Camera,Pencil,Save,X}from"lucide-react";
 import{supabase}from"./supabase";
 import{LiveRoom}from"./components/LiveRoom";
 import{CreateRoom,Rooms}from"./components/Rooms";
@@ -253,7 +253,7 @@ function My({session,setV}){
     {message&&<div className="profileMessage" role="status">{message}</div>}
     <button className="logout" onClick={logout}><LogOut/> 로그아웃</button>
     <h3>이번 달 나의 읽기</h3><div className="stats"><div>시작 전<b>2권</b></div><div>읽는 중<b>3권</b></div><div>읽기 완료<b>1권</b></div></div>
-    <h3>나의 읽기 달력</h3><Calendar schedules={schedules} showDiary={false}/><ScheduleManager session={session} onSchedulesChange={setSchedules}/><div className="due"><CalendarDays/><span><b>9월 12일까지</b><br/>17~19쪽 읽어주세요.</span></div>
+    <h3>나의 읽기 달력</h3><Calendar schedules={schedules} showDiary={false}/><ScheduleManager session={session} onSchedulesChange={setSchedules}/>
     <h3>참여 중인 방</h3><Card r={demoRooms[0]} f={()=>setV("rooms")}/><div className="demoNotice">현재 읽기방/달력은 데모 데이터예요. 다음 버전에서 실제 계정별 데이터로 연결합니다.</div>
   </>;
 }
