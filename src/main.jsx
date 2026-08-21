@@ -7,6 +7,7 @@ import{CreateRoom,Rooms}from"./components/Rooms";
 import{Library}from"./components/Library";
 import{GuestJoin}from"./components/GuestJoin";
 import{BrandWordmark}from"./components/BrandWordmark";
+import{ScheduleManager}from"./components/ScheduleManager";
 import{normalizeInviteCode}from"./services/readingRooms";
 import"./style.css";
 import"./calm.css";
@@ -113,7 +114,9 @@ function translateAuthError(m=""){if(m.includes("Invalid login credentials"))ret
 function HomeP({setV,session,openAuth}){const openRooms=()=>session?setV("rooms"):openAuth();return <><section className="hero"><div><small className="heroEyebrow">READ TOGETHER</small><h1>한 쪽씩,<br/>함께 GO.</h1><p>같은 책을 펼치고 서로의 목소리를 들으며,<br/>오늘의 한 쪽을 함께 읽어요.</p></div><div className="heroArt" aria-hidden="true"><div className="editorialTile tileMain"><span>오늘의 LIVE</span><b>같은 책,<br/>서로의 목소리</b><Mic/></div><div className="editorialTile tilePage"><small>NOW READING</small><b>17쪽</b></div><div className="editorialTile tilePeople"><small>TOGETHER</small><b>3명 LIVE</b></div></div></section>{!session&&<button className="welcome" onClick={openAuth}><UserRound/><span><b>내 독서 기록을 이어가세요</b><small>로그인하면 읽기방과 기록을 안전하게 보관할 수 있어요.</small></span><ChevronRight/></button>}<section className="homeActions" aria-label="빠른 시작"><button className="primaryAction" onClick={openRooms}><span className="actionIcon"><Mic/></span><span><small>지금 바로 시작</small><b>LIVE 함께 읽기</b><em>실시간으로 목소리 나누기</em></span><ChevronRight/></button><button className="secondaryAction" onClick={openRooms}><Users/><span><b>함께 읽기방 만들기</b><small>책을 고르고 사람들을 초대해요</small></span><ChevronRight/></button><button className="codeAction" onClick={openRooms}><Lock/> 초대 코드로 입장</button></section><h3>지금 가장 많이 읽히는 책</h3><div className="books">{[["어린 왕자",73],["데미안",58],["아낌없이 주는 나무",67]].map((x,i)=><div key={i}><div className="cover"><small>JJOKGO READING LIST</small><span>{x[0]}</span><i>0{i+1}</i></div><b>{x[0]}</b><strong>{x[1]}%</strong><Progress p={x[1]}/></div>)}</div><h3>나의 읽기 현황</h3><Calendar/><h3>참여 중인 방</h3><Card r={demoRooms[0]} f={openRooms}/></>}
 function Progress({p}){return <div className="bar"><i style={{width:p+"%"}}/></div>}
 function Card({r,f}){return <button className="card" onClick={f}><div className="thumb">📖</div><span><b>{r.name} {r.is_private?"🔒":""}</b><small>{r.books?.title} · 7명 참여</small><Progress p={r.progress||0}/></span><strong>{r.progress||0}%</strong><ChevronRight/></button>}
-function Calendar(){
+const DEMO_SCHEDULES=[{id:"demo",title:"아이들과 함께 읽기",weekdays:[0,1,3],start_time:"20:30",end_time:"21:30",is_active:true}];
+const WEEKDAY_LABELS=["월","화","수","목","금","토","일"];
+function Calendar({schedules=null,showDiary=true}){
   const today=new Date();
   const[visibleMonth,setVisibleMonth]=useState(()=>new Date(today.getFullYear(),today.getMonth(),1));
   const year=visibleMonth.getFullYear();
@@ -123,7 +126,8 @@ function Calendar(){
   const cells=[...Array(firstDay).fill(null),...Array.from({length:dayCount},(_,i)=>i+1)];
   while(cells.length%7)cells.push(null);
   const isCurrentMonth=year===today.getFullYear()&&month===today.getMonth();
-  const completedDays=new Set([3,8,12,17]);
+  const completedDays=new Set(schedules===null?[3,8,12,17]:[]);
+  const visibleSchedules=(schedules===null?DEMO_SCHEDULES:schedules).filter(schedule=>schedule.is_active);
   const moveMonth=offset=>setVisibleMonth(new Date(year,month+offset,1));
   return <section className="calendar" aria-label={`${year}년 ${month+1}월 읽기 현황`}>
     <div className="calendarHead">
@@ -136,17 +140,18 @@ function Calendar(){
         const weekendClass=index%7===5?"saturday":index%7===6?"sunday":"";
         if(!day)return <span key={`empty-${index}`} className={`empty ${weekendClass}`.trim()} aria-hidden="true"/>;
         const statusClass=isCurrentMonth&&day===today.getDate()?"doing":isCurrentMonth&&completedDays.has(day)?"done":"";
-        const hasReadingSchedule=[0,1,3].includes(index%7);
-        return <span key={`${year}-${month}-${day}`} role="gridcell" className={`${weekendClass} ${statusClass} ${hasReadingSchedule?"scheduled":""}`.trim()} aria-label={`${month+1}월 ${day}일${hasReadingSchedule?", 오후 8시 30분 읽기 일정":""}`}>{day}{hasReadingSchedule&&<small className="scheduleTime">20:30</small>}</span>;
+        const daySchedules=visibleSchedules.filter(schedule=>schedule.weekdays.includes(index%7));
+        const firstSchedule=daySchedules[0];
+        return <span key={`${year}-${month}-${day}`} role="gridcell" className={`${weekendClass} ${statusClass} ${firstSchedule?"scheduled":""}`.trim()} aria-label={`${month+1}월 ${day}일${firstSchedule?`, ${firstSchedule.start_time} ${firstSchedule.title}`:""}`}>{day}{firstSchedule&&<small className="scheduleTime">{firstSchedule.start_time}{daySchedules.length>1?` +${daySchedules.length-1}`:""}</small>}</span>;
       })}
     </div>
-    <div className="scheduleDiary">
+    {showDiary&&<div className="scheduleDiary">
       <div className="scheduleDiaryHead"><small>MY JJOKGO DIARY</small><strong>나의 쪽GO 일정</strong></div>
-      <article className="scheduleEntry">
-        <div className="scheduleWhen"><small>EVERY WEEK</small><b>20:30—21:30</b></div>
-        <div className="scheduleDetail"><span className="scheduleType">정기 일정</span><strong>아이들과 함께 읽기</strong><div className="scheduleDays" aria-label="매주 월요일, 화요일, 목요일"><i>월</i><i>화</i><i>목</i></div></div>
-      </article>
-    </div>
+      {visibleSchedules.map(schedule=><article className="scheduleEntry" key={schedule.id}>
+        <div className="scheduleWhen"><small>EVERY WEEK</small><b>{schedule.start_time}—{schedule.end_time}</b></div>
+        <div className="scheduleDetail"><span className="scheduleType">정기 일정</span><strong>{schedule.title}</strong><div className="scheduleDays" aria-label={schedule.weekdays.map(day=>`${WEEKDAY_LABELS[day]}요일`).join(", ")}>{schedule.weekdays.map(day=><i key={day}>{WEEKDAY_LABELS[day]}</i>)}</div></div>
+      </article>)}
+    </div>}
   </section>
 }
 
@@ -181,6 +186,7 @@ function My({session,setV}){
   const[editing,setEditing]=useState(false);
   const[saving,setSaving]=useState(false);
   const[message,setMessage]=useState("");
+  const[schedules,setSchedules]=useState([]);
 
   useEffect(()=>()=>{if(preview?.startsWith("blob:"))URL.revokeObjectURL(preview)},[preview]);
 
@@ -247,7 +253,7 @@ function My({session,setV}){
     {message&&<div className="profileMessage" role="status">{message}</div>}
     <button className="logout" onClick={logout}><LogOut/> 로그아웃</button>
     <h3>이번 달 나의 읽기</h3><div className="stats"><div>시작 전<b>2권</b></div><div>읽는 중<b>3권</b></div><div>읽기 완료<b>1권</b></div></div>
-    <h3>나의 읽기 달력</h3><Calendar/><div className="due"><CalendarDays/><span><b>9월 12일까지</b><br/>17~19쪽 읽어주세요.</span></div>
+    <h3>나의 읽기 달력</h3><Calendar schedules={schedules} showDiary={false}/><ScheduleManager session={session} onSchedulesChange={setSchedules}/><div className="due"><CalendarDays/><span><b>9월 12일까지</b><br/>17~19쪽 읽어주세요.</span></div>
     <h3>참여 중인 방</h3><Card r={demoRooms[0]} f={()=>setV("rooms")}/><div className="demoNotice">현재 읽기방/달력은 데모 데이터예요. 다음 버전에서 실제 계정별 데이터로 연결합니다.</div>
   </>;
 }

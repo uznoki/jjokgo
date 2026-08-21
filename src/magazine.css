@@ -165,6 +165,48 @@ h3:after{content:"  /  EDITOR'S SELECTION";float:right;color:var(--mag-muted);fo
 .scheduleType{margin-bottom:7px;color:var(--mag-live);font-size:9px;font-weight:700;letter-spacing:.07em}
 .scheduleDays{position:absolute;right:18px;top:50%;display:flex;gap:6px;transform:translateY(-50%)}
 .scheduleDays i{width:32px;height:32px;border:1px solid var(--mag-black);border-radius:50%;display:grid;place-items:center;background:transparent;color:var(--mag-black);font-size:11px;font-style:normal;font-weight:700}
+.scheduleManager{margin-top:34px;border-top:1px solid var(--mag-black);border-bottom:1px solid var(--mag-black)}
+.scheduleManagerHead{min-height:86px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.scheduleManagerHead small{color:var(--mag-muted);font-size:8px;font-weight:700;letter-spacing:.12em}
+.scheduleManagerHead h3{margin:4px 0 0;font-size:22px;font-weight:500;letter-spacing:-.045em}
+.scheduleManagerHead h3:after{display:none}
+.scheduleAddButton{min-height:44px;padding:0 17px;border:1px solid var(--mag-black);display:flex;align-items:center;gap:7px;background:var(--mag-black);color:white;font-size:12px;font-weight:700}
+.scheduleAddButton svg{width:16px}
+.scheduleMessage{margin:0 0 18px;padding:12px 14px;border:1px solid var(--mag-black);background:var(--mag-blue);font-size:12px}
+.scheduleForm{margin-bottom:28px;padding:22px;border:1px solid var(--mag-black);display:grid;grid-template-columns:1fr 1fr;gap:20px;background:var(--mag-white)}
+.scheduleFormTitle{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--mag-line)}
+.scheduleFormTitle strong{font-size:18px;font-weight:500}
+.scheduleFormTitle button{width:34px;height:34px;border:0;background:transparent}
+.scheduleFormTitle svg{width:19px}
+.scheduleForm label,.scheduleForm fieldset{display:flex;flex-direction:column;gap:9px;color:var(--mag-muted);font-size:10px;font-weight:700;letter-spacing:.04em}
+.scheduleForm>label,.scheduleForm>fieldset{grid-column:1/-1}
+.scheduleForm input[type="text"],.scheduleForm label>input:not([type="checkbox"]){min-height:46px;padding:0 12px;border:0;border-bottom:1px solid var(--mag-black);border-radius:0;background:transparent;color:var(--mag-black);font:inherit;font-size:14px;letter-spacing:0}
+.scheduleForm fieldset{margin:0;padding:0;border:0}
+.weekdayPicker{display:flex;gap:8px;flex-wrap:wrap}
+.weekdayPicker button{width:40px;height:40px;border:1px solid var(--mag-black);border-radius:50%;background:transparent;color:var(--mag-black);font-size:12px;font-weight:700}
+.weekdayPicker button.selected{background:var(--mag-black);color:white}
+.scheduleTimeFields{grid-column:1/-1;display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:12px}
+.scheduleTimeFields>span{padding-bottom:15px;color:var(--mag-muted)}
+.scheduleForm .scheduleActive{flex-direction:row;align-items:center;gap:9px;color:var(--mag-black);font-size:12px;font-weight:500;letter-spacing:0}
+.scheduleActive input{width:17px;height:17px;accent-color:var(--mag-black)}
+.scheduleFormActions{grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px}
+.scheduleFormActions button{min-height:42px;padding:0 18px;border:1px solid var(--mag-black);display:flex;align-items:center;gap:7px;background:transparent;font-size:12px;font-weight:700}
+.scheduleFormActions button:last-child{background:var(--mag-black);color:white}
+.scheduleFormActions svg{width:15px}
+.scheduleEmpty{min-height:180px;padding:28px;border-top:1px solid var(--mag-line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center}
+.scheduleEmpty>svg{width:28px;color:var(--mag-muted)}
+.scheduleEmpty>b{font-size:16px;font-weight:500}
+.scheduleEmpty>small{color:var(--mag-muted);font-size:11px}
+.scheduleEmpty>button{margin-top:8px;padding:10px 14px;border:1px solid var(--mag-black);display:flex;align-items:center;gap:6px;background:transparent;font-size:11px;font-weight:700}
+.scheduleEmpty>button svg{width:15px}
+.scheduleList{display:grid;gap:14px;padding-bottom:28px}
+.managedSchedule{display:grid;grid-template-columns:minmax(165px,.32fr) 1fr auto;border-top:1px solid var(--mag-line);border-bottom:1px solid var(--mag-line)}
+.managedSchedule.inactive{opacity:.55}
+.scheduleItemActions{min-width:112px;padding:12px;border-left:1px solid var(--mag-line);display:flex;flex-direction:column;justify-content:center;gap:6px}
+.scheduleItemActions button{min-height:34px;padding:0 10px;border:0;display:flex;align-items:center;justify-content:center;gap:5px;background:transparent;font-size:10px;font-weight:700}
+.scheduleItemActions button:hover{background:#ecebe5}
+.scheduleItemActions button.confirmDelete{background:var(--mag-live);color:white}
+.scheduleItemActions svg{width:14px}
 
 .auth{max-width:520px}
 .authBrand.brandWordmark{margin-top:45px;color:var(--mag-black)}
@@ -261,6 +303,9 @@ nav .mic.active{background:var(--mag-live)}
   .scheduleDetail{min-height:104px;padding:18px 118px 18px 16px}
   .scheduleDays{right:14px}
   .scheduleDays i{width:28px;height:28px}
+  .scheduleManager{margin-top:26px}.scheduleManagerHead{min-height:74px}.scheduleManagerHead h3{font-size:19px}.scheduleAddButton{padding:0 12px}
+  .scheduleForm{grid-template-columns:1fr;padding:18px 14px}.scheduleTimeFields{grid-template-columns:1fr}.scheduleTimeFields>span{display:none}.scheduleFormActions button{flex:1;justify-content:center}
+  .managedSchedule{grid-template-columns:1fr}.managedSchedule .scheduleWhen{border-right:0;border-bottom:1px solid var(--mag-line)}.managedSchedule .scheduleDetail{min-height:104px}.scheduleItemActions{min-width:0;padding:8px;border-left:0;border-top:1px solid var(--mag-line);flex-direction:row}.scheduleItemActions button{flex:1}
   .pagePlanFields{grid-template-columns:1fr 1fr}.pagePlanFields label:first-of-type{grid-column:1/-1}
   .readingPlanSummary{align-items:flex-start;flex-direction:column}.readingPlanSummary>button{align-self:flex-end}
   .readingPlanEditor{grid-template-columns:1fr 1fr}.readingPlanEditor label:first-child{grid-column:1/-1}.readingPlanEditor>button{grid-column:1/-1}
