@@ -17,7 +17,12 @@ const FLOW_LINES=[
   "조밥도 굶기를 먹다시피 하는 형편이니 물론 약 한 첩 써 본 일이 없다."
 ];
 
-const SPEEDS={slow:{label:"천천히",delay:7200},normal:{label:"보통",delay:5200},fast:{label:"빠르게",delay:3600}};
+const SPEEDS={
+  slow:{label:"천천히",charactersPerMinute:170,autoAdvance:true},
+  normal:{label:"보통",charactersPerMinute:230,autoAdvance:true},
+  fast:{label:"빠르게",charactersPerMinute:310,autoAdvance:true},
+  manual:{label:"직접 넘김",charactersPerMinute:220,autoAdvance:false}
+};
 const SOURCE_URL="https://gongu.copyright.or.kr/gongu/wrt/wrt/view.do?menuNo=200019&wrtSn=9002094";
 const FLOW_ROOM_ID="flow-g905-9002094";
 
@@ -108,10 +113,15 @@ export function FlowReader({session,onBack}){
     window.clearTimeout(timerRef.current);
     if(!playing)return undefined;
     const characters=Array.from(FLOW_LINES[index]);
+    const pace=SPEEDS[speed];
     if(highlightedCount<characters.length){
-      timerRef.current=window.setTimeout(()=>setHighlightedCount(current=>Math.min(characters.length,current+1)),Math.max(34,SPEEDS[speed].delay/characters.length));
+      const character=characters[highlightedCount];
+      const punctuationPause=/[.!?。！？]/.test(character)?1.9:/[,，:;·]/.test(character)?1.4:/\s/.test(character)?.55:1;
+      const characterDelay=Math.round((60000/pace.charactersPerMinute)*punctuationPause);
+      timerRef.current=window.setTimeout(()=>setHighlightedCount(current=>Math.min(characters.length,current+1)),characterDelay);
       return()=>window.clearTimeout(timerRef.current);
     }
+    if(!pace.autoAdvance)return undefined;
     timerRef.current=window.setTimeout(()=>{
       if(index>=FLOW_LINES.length-1){
         setPlaying(false);
@@ -143,7 +153,7 @@ export function FlowReader({session,onBack}){
     return()=>{recognition.onresult=null;recognition.onerror=null;try{recognition.stop()}catch{}recognitionRef.current=null};
   },[index,live.micState,playing,SpeechRecognition]);
 
-  const move=offset=>{setPlaying(false);updateLine(indexRef.current+offset)};
+  const move=offset=>{if(!(playing&&speed==="manual"))setPlaying(false);updateLine(indexRef.current+offset)};
   const restart=()=>{setPlaying(false);updateLine(0)};
   const progress=((index+1)/FLOW_LINES.length)*100;
 
