@@ -53,7 +53,7 @@ function flowGuestError(error){
 export function ReadingModes({onBack,onFlow,onPage}){
   return <section className="readingModesPage">
     <button className="back" onClick={onBack}>‹ 홈으로</button>
-    <div className="modeIntro"><small>JJOKGO READING FORMAT</small><h1>어떻게 함께<br/>읽을까요?</h1><p>사람 수가 아니라, 오늘 책을 읽는 방식으로 선택해요.</p></div>
+    <div className="modeIntro"><small>JJOKGO READING FORMAT</small><h1>어떻게 함께<br/>읽을까요?</h1><p>오늘 책을 읽는 방식으로 선택해요.</p></div>
     <div className="modeGrid">
       <button className="modeCard flow" onClick={onFlow}>
         <span className="modeIndex">01</span><span className="modeLabel">쪽GO FLOW</span>
