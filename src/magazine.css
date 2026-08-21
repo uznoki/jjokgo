@@ -37,7 +37,7 @@ header{height:78px;border-bottom:1px solid var(--mag-black);display:grid;grid-te
 .desktopHeroMark,.desktopHeroActions,.desktopScrollCue,.desktopFooter{display:none}
 .mastNav{display:flex;align-items:center;gap:28px}
 .mastNav button{padding:8px 0;border:0;background:transparent;color:var(--mag-black);font-size:11px;font-weight:700;letter-spacing:.055em}
-.mastNav button:hover{text-decoration:underline;text-underline-offset:5px}
+.mastNav button:hover{text-decoration:none}
 .mastNav button:disabled{opacity:.35}
 header>button.headAccount{min-height:auto;padding:7px 0;border:0;border-radius:0;background:transparent;color:var(--mag-black);font-size:11px;font-weight:700;box-shadow:none}
 header>button.headAccount:hover{transform:none;border:0;background:transparent;text-decoration:underline;text-underline-offset:5px}
