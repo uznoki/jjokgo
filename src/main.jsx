@@ -132,8 +132,16 @@ function Calendar(){
         const weekendClass=index%7===5?"saturday":index%7===6?"sunday":"";
         if(!day)return <span key={`empty-${index}`} className={`empty ${weekendClass}`.trim()} aria-hidden="true"/>;
         const statusClass=isCurrentMonth&&day===today.getDate()?"doing":isCurrentMonth&&completedDays.has(day)?"done":"";
-        return <span key={`${year}-${month}-${day}`} role="gridcell" className={`${weekendClass} ${statusClass}`.trim()} aria-label={`${month+1}월 ${day}일`}>{day}</span>;
+        const hasReadingSchedule=[0,1,3].includes(index%7);
+        return <span key={`${year}-${month}-${day}`} role="gridcell" className={`${weekendClass} ${statusClass} ${hasReadingSchedule?"scheduled":""}`.trim()} aria-label={`${month+1}월 ${day}일${hasReadingSchedule?", 오후 8시 30분 읽기 일정":""}`}>{day}{hasReadingSchedule&&<small className="scheduleTime">20:30</small>}</span>;
       })}
+    </div>
+    <div className="scheduleDiary">
+      <div className="scheduleDiaryHead"><small>MY JJOKGO DIARY</small><strong>나의 쪽GO 일정</strong></div>
+      <article className="scheduleEntry">
+        <div className="scheduleWhen"><small>EVERY WEEK</small><b>20:30—21:30</b></div>
+        <div className="scheduleDetail"><span className="scheduleType">정기 일정</span><strong>아이들과 함께 읽기</strong><div className="scheduleDays" aria-label="매주 월요일, 화요일, 목요일"><i>월</i><i>화</i><i>목</i></div></div>
+      </article>
     </div>
   </section>
 }function My({session,setV}){const nickname=session.user.user_metadata?.nickname||session.user.email?.split("@")[0]||"쪽GO 사용자";async function logout(){await supabase.auth.signOut();setV("home")}return <><section className="profileHero"><div className="avatar"><UserRound/></div><div><small>MY 쪽GO</small><h1>{nickname}님</h1><p>{session.user.email}</p></div></section><button className="logout" onClick={logout}><LogOut/> 로그아웃</button><h3>이번 달 나의 읽기</h3><div className="stats"><div>시작 전<b>2권</b></div><div>읽는 중<b>3권</b></div><div>읽기 완료<b>1권</b></div></div><h3>나의 읽기 달력</h3><Calendar/><div className="due"><CalendarDays/><span><b>9월 12일까지</b><br/>17~19쪽 읽어주세요.</span></div><h3>참여 중인 방</h3><Card r={demoRooms[0]} f={()=>setV("rooms")}/><div className="demoNotice">현재 읽기방/달력은 데모 데이터예요. 다음 버전에서 실제 계정별 데이터로 연결합니다.</div></>}
