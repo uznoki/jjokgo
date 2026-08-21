@@ -15,6 +15,8 @@ function roomError(error){
   if(message.includes("INVALID_COVER_URL"))return "표지 주소는 https://로 시작해야 해요.";
   if(message.includes("BOOK_METADATA_TOO_LONG"))return "책 정보가 너무 길어요. 제목과 상세 정보를 줄여주세요.";
   if(message.includes("BOOK_UPDATE_DENIED"))return "이 책 정보를 수정할 권한이 없어요.";
+  if(message.includes("INVALID_ROOM_NAME"))return "방 이름은 1자 이상 100자 이하로 입력해주세요.";
+  if(message.includes("ROOM_OWNER_REQUIRED"))return "방을 만든 사람만 방 이름을 수정할 수 있어요.";
   if(message.includes("total_pages")||message.includes("reading_start_page")||message.includes("reading_end_page")||message.includes("current_page"))return "읽기 페이지 데이터베이스 설정이 아직 적용되지 않았어요.";
   if(message.includes("join_reading_room_by_code")||message.includes("reading_room_members")){
     return "초대 기능의 데이터베이스 설정이 아직 적용되지 않았어요.";
@@ -25,7 +27,7 @@ function roomError(error){
   return message||"읽기방 정보를 불러오지 못했어요.";
 }
 
-function RoomCard({room,onOpen,showInvite=false,onEditBook}){
+function RoomCard({room,onOpen,showInvite=false,onEditBook,onEditName}){
   const [copied,setCopied]=useState(false);
   async function copyCode(){
     if(!room.invite_code)return;
@@ -44,9 +46,38 @@ function RoomCard({room,onOpen,showInvite=false,onEditBook}){
     </button>
     {showInvite&&<div className="roomOwnerActions">
       {room.invite_code&&<button className="inviteCode" onClick={copyCode} aria-label="게스트 초대 링크 복사"><Copy/> {copied?"링크 복사됨":room.invite_code}</button>}
+      <button className="editBookButton" onClick={()=>onEditName(room)}><Pencil/> 방 이름 수정</button>
       {room.books&&<button className="editBookButton" onClick={()=>onEditBook(room.books)}><Pencil/> 책 정보 보완</button>}
     </div>}
   </div>;
+}
+
+function RoomNameEditor({room,onClose,onSaved}){
+  const [name,setName]=useState(room.name||"");
+  const [saving,setSaving]=useState(false);
+  const [message,setMessage]=useState("");
+
+  async function save(event){
+    event.preventDefault();
+    const cleanName=name.trim();
+    if(!cleanName||cleanName.length>100){setMessage("방 이름은 1자 이상 100자 이하로 입력해주세요.");return;}
+    setSaving(true);
+    setMessage("");
+    const {error}=await supabase.rpc("update_reading_room_name",{p_room_id:String(room.id),p_name:cleanName});
+    if(error){setMessage(roomError(error));setSaving(false);return;}
+    await onSaved();
+    setSaving(false);
+    onClose();
+  }
+
+  return <section className="bookEditor roomNameEditor">
+    <div className="bookEditorHeading"><div><Pencil/><span><b>방 이름 수정</b><small>초대 링크와 참여자는 그대로 유지돼요.</small></span></div><button type="button" onClick={onClose}>닫기</button></div>
+    <form onSubmit={save}>
+      <label>방 이름<input required autoFocus maxLength="100" value={name} onChange={event=>setName(event.target.value)}/></label>
+      <button className="wide" disabled={saving}>{saving?"저장 중…":"이름 저장"}</button>
+    </form>
+    {message&&<div className="roomMessage" role="status">{message}</div>}
+  </section>;
 }
 
 function BookMetadataEditor({book,onClose,onSaved}){
@@ -105,6 +136,7 @@ export function Rooms({setV,open,session,openAuth}){
   const [joining,setJoining]=useState(false);
   const [message,setMessage]=useState("");
   const [editingBook,setEditingBook]=useState(null);
+  const [editingRoom,setEditingRoom]=useState(null);
 
   const loadRooms=useCallback(async()=>{
     if(!session){setBusy(false);return;}
@@ -163,6 +195,7 @@ export function Rooms({setV,open,session,openAuth}){
       <button disabled={joining}>{joining?"입장 중…":"방 입장"}</button>
     </form>
     {message&&<div className="roomMessage" role="status">{message}</div>}
+    {editingRoom&&<RoomNameEditor room={editingRoom} onClose={()=>setEditingRoom(null)} onSaved={loadRooms}/>}
     {editingBook&&<BookMetadataEditor book={editingBook} onClose={()=>setEditingBook(null)} onSaved={loadRooms}/>}
 
     <div className="roomTabs" role="tablist">
@@ -178,7 +211,7 @@ export function Rooms({setV,open,session,openAuth}){
     {!busy&&visibleRooms.length===0&&
       <div className="emptyRooms"><Users/><b>{activeTab==="joined"?"아직 참여 중인 방이 없어요":"아직 만든 읽기방이 없어요"}</b><small>{activeTab==="joined"?"초대 코드를 입력해 함께 읽어보세요.":"새 읽기방을 만들고 사람들을 초대해보세요."}</small></div>
     }
-    {!busy&&visibleRooms.map(room=><RoomCard key={room.id} room={room} onOpen={open} showInvite={activeTab==="owned"} onEditBook={setEditingBook}/>)}
+    {!busy&&visibleRooms.map(room=><RoomCard key={room.id} room={room} onOpen={open} showInvite={activeTab==="owned"} onEditBook={book=>{setEditingRoom(null);setEditingBook(book)}} onEditName={selectedRoom=>{setEditingBook(null);setEditingRoom(selectedRoom)}}/>)}
 
     {!isGuest&&<button className="wide" onClick={()=>session?setV("createRoom"):openAuth()}>+ PAGE 읽기방 만들기</button>}
   </>;
