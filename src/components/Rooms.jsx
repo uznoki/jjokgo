@@ -17,6 +17,7 @@ function roomError(error){
   if(message.includes("BOOK_UPDATE_DENIED"))return "이 책 정보를 수정할 권한이 없어요.";
   if(message.includes("INVALID_ROOM_NAME"))return "방 이름은 1자 이상 100자 이하로 입력해주세요.";
   if(message.includes("ROOM_OWNER_REQUIRED"))return "방을 만든 사람만 방 이름을 수정할 수 있어요.";
+  if(message.includes("delete_reading_room"))return "방 삭제 데이터베이스 설정이 아직 적용되지 않았어요.";
   if(message.includes("total_pages")||message.includes("reading_start_page")||message.includes("reading_end_page")||message.includes("current_page"))return "읽기 페이지 데이터베이스 설정이 아직 적용되지 않았어요.";
   if(message.includes("join_reading_room_by_code")||message.includes("reading_room_members")){
     return "초대 기능의 데이터베이스 설정이 아직 적용되지 않았어요.";
@@ -57,6 +58,12 @@ function RoomDeleteConfirm({room,onClose,onDeleted}){
   const [deleting,setDeleting]=useState(false);
   const [message,setMessage]=useState("");
 
+  useEffect(()=>{
+    const closeOnEscape=event=>{if(event.key==="Escape"&&!deleting)onClose()};
+    window.addEventListener("keydown",closeOnEscape);
+    return()=>window.removeEventListener("keydown",closeOnEscape);
+  },[deleting,onClose]);
+
   async function removeRoom(){
     setDeleting(true);
     setMessage("");
@@ -67,12 +74,14 @@ function RoomDeleteConfirm({room,onClose,onDeleted}){
     onClose();
   }
 
-  return <section className="roomDeleteConfirm" role="alertdialog" aria-labelledby="room-delete-title" aria-describedby="room-delete-description">
-    <Trash2/>
-    <div><b id="room-delete-title">‘{room.name}’ 방을 삭제할까요?</b><p id="room-delete-description">참여자들은 더 이상 이 방과 초대 링크에 접근할 수 없습니다. 책 정보는 카탈로그에 남지만, 방은 복구할 수 없어요.</p></div>
-    <div className="roomDeleteActions"><button type="button" onClick={onClose} disabled={deleting}>취소</button><button type="button" onClick={removeRoom} disabled={deleting}>{deleting?"삭제 중…":"방 삭제 확인"}</button></div>
-    {message&&<p className="roomDeleteMessage" role="status">{message}</p>}
-  </section>;
+  return <div className="roomDialogBackdrop" onMouseDown={event=>{if(event.target===event.currentTarget&&!deleting)onClose()}}>
+    <section className="roomDeleteConfirm" role="alertdialog" aria-modal="true" aria-labelledby="room-delete-title" aria-describedby="room-delete-description">
+      <Trash2/>
+      <div><b id="room-delete-title">‘{room.name}’ 방을 삭제할까요?</b><p id="room-delete-description">참여자들은 더 이상 이 방과 초대 링크에 접근할 수 없습니다. 책 정보는 카탈로그에 남지만, 방은 복구할 수 없어요.</p></div>
+      <div className="roomDeleteActions"><button type="button" onClick={onClose} disabled={deleting}>취소</button><button type="button" onClick={removeRoom} disabled={deleting}>{deleting?"삭제 중…":"방 삭제 확인"}</button></div>
+      {message&&<p className="roomDeleteMessage" role="status">{message}</p>}
+    </section>
+  </div>;
 }
 
 function RoomNameEditor({room,onClose,onSaved}){
