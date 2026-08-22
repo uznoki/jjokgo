@@ -369,7 +369,7 @@ nav .mic.active{background:var(--mag-live)}
 /* Desktop website — deliberately separate from the mobile app shell.
    Clubhouse-inspired restraint: one generous message, a compact masthead,
    minimal actions and no persistent mobile dock. */
-@media (min-width:900px){
+@media (min-width:800px){
   body{background:var(--mag-paper)}
   .app{max-width:none;min-height:100vh}
   .readingBanner{display:none}
@@ -411,7 +411,7 @@ nav .mic.active{background:var(--mag-live)}
   .desktopFooter>b{justify-self:end;font-size:8px;font-weight:600;letter-spacing:.12em}
 }
 
-@media (min-width:900px) and (max-height:760px){
+@media (min-width:800px) and (max-height:760px){
   .view-home .hero{min-height:680px;padding-top:55px}
   .view-home .hero h1{font-size:clamp(82px,9vw,132px)}
 }
