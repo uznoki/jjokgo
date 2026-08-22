@@ -306,18 +306,27 @@ nav .mic.active{background:var(--mag-live)}
 .flowPlay:disabled{background:#d7d6d0!important;color:#888!important}.flowPlay.live{background:var(--mag-live)}
 .flowParticipants{margin-top:26px;padding:24px 0;border-top:1px solid var(--mag-black);border-bottom:1px solid var(--mag-black)}.flowParticipants>div:first-child{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px}.flowParticipants>div:first-child small{color:var(--mag-live);font-size:8px;font-weight:700;letter-spacing:.12em}.flowParticipants>div:first-child b{font-size:16px;font-weight:500}.flowParticipants>div:nth-child(2){display:flex;flex-wrap:wrap;gap:7px}.flowParticipants>div:nth-child(2)>span{min-height:42px;padding:8px 12px;border:1px solid var(--mag-line);display:flex;align-items:center;gap:7px;background:var(--mag-white);font-size:11px;font-weight:600}.flowParticipants>div:nth-child(2)>span>i{width:7px;height:7px;border-radius:50%;background:#aaa}.flowParticipants>div:nth-child(2)>span.live{border-color:var(--mag-live);background:#f7e0da}.flowParticipants>div:nth-child(2)>span.live>i{background:var(--mag-live)}.flowParticipants>div:nth-child(2)>span>small{color:var(--mag-muted);font-size:8px;font-weight:500}.flowParticipants>p{margin:15px 0 0;color:var(--mag-muted);font-size:9px;line-height:1.6}
 
-@media (max-width:699px){
-  .readingBanner{padding:0 16px}
-  .readingBanner b{display:none}
+@media (max-width:799px){
+  .readingBanner{display:none}
   main{padding-left:18px;padding-right:18px}
   header{height:68px;grid-template-columns:1fr auto}
   .mastNav{display:none}
-  .hero{min-height:auto;margin:0;padding:34px 0 30px;display:grid;grid-template-columns:1fr;gap:34px}
-  .hero h1{font-size:clamp(58px,17vw,76px)}
-  .hero p{font-size:14px}
-  .heroArt{width:100%;height:280px;flex:auto;grid-template-columns:1.45fr 1fr;white-space:normal}
-  .tileMain{padding:22px}
-  .tileMain b{font-size:27px}
+  .view-home .hero{position:relative;isolation:isolate;min-height:calc(100svh - 144px);margin:0;padding:54px 4px 70px;border:0;display:grid;place-items:center;text-align:center;overflow:hidden}
+  .view-home .hero:before,.view-home .hero:after{content:"";position:absolute;z-index:-1;border-radius:50%;pointer-events:none}
+  .view-home .hero:before{width:160px;height:160px;left:-108px;bottom:7%;background:var(--mag-lime)}
+  .view-home .hero:after{width:86px;height:86px;right:-37px;top:9%;border:13px solid var(--mag-live);background:transparent}
+  .view-home .hero>div:first-child{width:100%;display:flex;flex-direction:column;align-items:center}
+  .view-home .heroEyebrow{font-size:9px;letter-spacing:.17em}
+  .view-home .hero h1{margin:19px 0 25px;font-size:clamp(62px,18vw,82px);line-height:.9;letter-spacing:-.09em}
+  .view-home .hero p{margin:0;font-size:13px;line-height:1.75}
+  .view-home .hero p br{display:none}
+  .view-home .heroArt{display:none}
+  .desktopHeroActions{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:29px}
+  .desktopHeroActions button{min-height:43px;padding:0 16px;border:1px solid var(--mag-black);border-radius:999px;background:transparent;color:var(--mag-black);font-size:10px;font-weight:700}
+  .desktopHeroActions button:first-child{display:flex;align-items:center;gap:7px;background:var(--mag-black);color:white}
+  .desktopHeroActions svg{width:14px}
+  .desktopScrollCue{display:flex;align-items:center;gap:9px;margin-top:42px;color:var(--mag-muted);font-size:7px;font-weight:700;letter-spacing:.14em}
+  .desktopScrollCue b{color:var(--mag-black);font-size:16px;font-weight:400}
   .homeActions{grid-template-columns:1fr}
   .primaryAction{min-height:126px;border-right:0;border-bottom:1px solid var(--mag-black)}
   .homeFormatStrip{padding:14px 12px;align-items:flex-start;flex-direction:column;gap:7px}.homeFormatStrip i{display:none}
@@ -353,7 +362,7 @@ nav .mic.active{background:var(--mag-live)}
   .libraryGrid{grid-template-columns:1fr}.libraryBook{grid-template-columns:78px 1fr auto;min-height:142px;padding:15px}.libraryCover{width:78px;height:106px}
 }
 
-@media (min-width:700px){
+@media (min-width:800px){
   .app{max-width:1440px}
   nav{max-width:1440px}
   .books{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -363,8 +372,8 @@ nav .mic.active{background:var(--mag-live)}
 .recommendedBooks{margin-top:54px}.recommendedBooks .sectionHeading{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:14px}.recommendedBooks .sectionHeading h3{min-width:0;margin:0;flex:1}.recommendedBooks .sectionHeading h3:after{display:none}.recommendedBooks .sectionHeading small{flex:0 0 auto;padding-bottom:4px;font-size:9px;font-weight:700;letter-spacing:.14em;color:var(--mag-muted);white-space:nowrap}
 .mastNav:after{content:"";position:absolute;left:var(--indicator-left);bottom:-1px;width:var(--indicator-width);height:2px;background:var(--mag-live);opacity:1;transition:left .24s ease,width .24s ease,opacity .16s ease}.mastNav[data-active="rooms"]{--indicator-left:82px;--indicator-width:92px}.mastNav[data-active="library"]{--indicator-left:192px;--indicator-width:66px}.mastNav[data-active="none"]:after{opacity:0}.mastNav button:hover,.mastNav button.active{color:var(--mag-live)}
 .books>button{min-width:125px;padding:18px;border:0;border-right:1px solid var(--mag-line);border-bottom:1px solid var(--mag-line);border-radius:0;background:transparent;box-shadow:none;display:flex;flex-direction:column;gap:7px;text-align:left;color:inherit;font:inherit;cursor:pointer}.books>button:nth-child(2){background:transparent}.books>button:nth-child(3){background:transparent}.books>button:nth-child(2) .cover{background:var(--mag-live);color:white}.books>button:nth-child(3) .cover{background:var(--mag-black);color:white}.books>button>b{font-size:13px;font-weight:500}.books>button>strong{font-size:11px;color:var(--mag-live)}.books>button:focus-visible{outline:3px solid var(--mag-live);outline-offset:-3px}
-@media (max-width:699px){.recommendedBooks{margin-top:46px}.recommendedBooks .sectionHeading{align-items:flex-start;flex-direction:column;gap:4px}.books>button{min-width:70vw}.books>button .cover{height:220px}}
-@media (min-width:700px){.books>button{min-width:0}}
+@media (max-width:799px){.recommendedBooks{margin-top:46px}.recommendedBooks .sectionHeading{align-items:flex-start;flex-direction:column;gap:4px}.books>button{min-width:70vw}.books>button .cover{height:220px}}
+@media (min-width:800px){.books>button{min-width:0}}
 
 /* Desktop website — deliberately separate from the mobile app shell.
    Clubhouse-inspired restraint: one generous message, a compact masthead,
