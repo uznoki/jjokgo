@@ -424,3 +424,97 @@ nav .mic.active{background:var(--mag-live)}
   .view-home .hero{min-height:680px;padding-top:55px}
   .view-home .hero h1{font-size:clamp(82px,9vw,132px)}
 }
+
+/* Action-first UX system v2
+   Keep the editorial identity, while making the next useful action and live state
+   visible before decorative or discovery content. */
+h3:after{display:none!important}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--mag-live);outline-offset:3px}
+.loading{min-height:160px;display:grid;place-items:center;color:var(--mag-muted)}
+.calendarHead button{width:44px;height:44px}
+.desktopFooter button{min-height:44px}
+.brand{justify-self:start;width:max-content;min-height:44px}
+header>button.headAccount{min-height:44px}
+.mastNav{--indicator-width:72px;grid-template-columns:72px 78px 84px;gap:16px}
+.mastNav button{min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.mastNav button span{font-size:8px;letter-spacing:.12em;color:var(--mag-muted)}
+.mastNav button b{font-size:11px;font-weight:700;letter-spacing:-.02em}
+.mastNav[data-active="rooms"]{--indicator-left:88px;--indicator-width:78px}
+.mastNav[data-active="library"]{--indicator-left:182px;--indicator-width:84px}
+
+.homeStart{max-width:1208px;margin:0 auto 46px;border:1px solid var(--mag-black);background:var(--mag-white);display:grid;grid-template-columns:minmax(170px,.54fr) minmax(250px,.9fr) 1.5fr;position:relative}
+.homeStartMeta,.homeStartStatus{min-height:138px;padding:22px;display:flex;flex-direction:column;justify-content:space-between}
+.homeStartMeta{border-right:1px solid var(--mag-black);background:var(--mag-lime)}
+.homeStartMeta small,.homeStartStatus small{font-size:8px;font-weight:700;letter-spacing:.13em;color:var(--mag-muted)}
+.homeStartMeta b{font-size:22px;font-weight:500;line-height:1.15;letter-spacing:-.05em}
+.homeStartStatus{border-right:1px solid var(--mag-black);justify-content:center;flex-direction:row;align-items:center;gap:14px}
+.homeStartStatus>svg{width:22px;flex:0 0 22px;color:var(--mag-live)}
+.homeStartStatus>span{display:flex;flex-direction:column;gap:7px;min-width:0}
+.homeStartStatus b{font-size:15px;font-weight:500;line-height:1.35}
+.homeStartActions{display:grid;grid-template-columns:1fr 1fr}
+.homeStartActions>button{min-height:138px;padding:20px;border:0;background:transparent;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;text-align:left}
+.homeStartActions>button+button{border-left:1px solid var(--mag-black)}
+.homeStartActions>button:hover{background:var(--mag-blue)}
+.homeStartActions>button.homeStartPrimary{background:var(--mag-black);color:white}
+.homeStartActions>button.homeStartPrimary:hover{background:var(--mag-live)}
+.homeStartActions svg{width:20px}.homeStartActions>button>svg:last-child{width:15px}
+.homeStartActions span{display:flex;flex-direction:column;gap:6px}
+.homeStartActions b{font-size:13px;font-weight:700}.homeStartActions small{color:inherit;font-size:9px;opacity:.68}
+.homeStartSchedule{position:absolute;right:10px;bottom:-44px;min-height:44px;padding:0;border:0;background:transparent;display:flex;align-items:center;gap:3px;color:var(--mag-muted);font-size:9px;font-weight:700}
+.homeStartSchedule:hover{color:var(--mag-live)}.homeStartSchedule svg{width:13px}
+
+.roomPrejoin{max-width:900px;margin:0 auto;padding:24px 0 70px}
+.prejoinCard{margin-top:20px;border:1px solid var(--mag-black);background:var(--mag-white);padding:clamp(28px,6vw,64px)}
+.prejoinCard>small{font-size:9px;font-weight:700;letter-spacing:.14em;color:var(--mag-live)}
+.prejoinCard h1{max-width:680px;margin:18px 0 14px;font-size:clamp(46px,7vw,78px);line-height:.98}
+.prejoinCard>p{margin:0 0 34px;color:var(--mag-muted)}
+.prejoinStatus{min-height:76px;padding:15px 18px;border:1px solid var(--mag-line);display:flex;align-items:center;gap:14px;background:var(--mag-paper)}
+.prejoinStatus>svg{width:24px;color:var(--mag-muted)}
+.prejoinStatus>span{display:flex;flex-direction:column;gap:4px}.prejoinStatus b{font-size:13px}.prejoinStatus small{color:var(--mag-muted);line-height:1.5}
+.prejoinStatus.ready{background:var(--mag-lime);border-color:var(--mag-black)}.prejoinStatus.ready>svg{color:var(--mag-black)}
+.prejoinStatus.error{background:var(--mag-live-soft);border-color:var(--mag-live)}.prejoinStatus.error>svg{color:var(--mag-live)}
+.prejoinActions{margin-top:12px;display:grid;grid-template-columns:1fr 1fr}
+.prejoinActions button{min-height:92px;padding:18px;border:1px solid var(--mag-black);display:flex;align-items:center;gap:13px;text-align:left}
+.prejoinActions button+button{border-left:0}.prejoinActions svg{width:22px;flex:0 0 22px}
+.prejoinActions span{display:flex;flex-direction:column;gap:5px}.prejoinActions b{font-size:14px}.prejoinActions small{font-size:10px;opacity:.7}
+.prejoinListen{background:var(--mag-white);color:var(--mag-black)}.prejoinListen:hover{background:var(--mag-blue)}
+.prejoinMic{background:var(--mag-black);color:white}.prejoinMic:hover{background:var(--mag-live)}
+.prejoinCard>em{display:block;margin-top:13px;color:var(--mag-muted);font-size:10px;font-style:normal}
+.mobileNavigation{display:none}
+
+@media (min-width:800px){
+  .view-home .hero{min-height:min(610px,calc(100vh - 230px));padding:62px 0 70px}
+  .view-home .hero h1{font-size:clamp(82px,9vw,132px)}
+  .view-home .desktopScrollCue{display:none}
+  .view-home .homeStart{margin-top:0}
+}
+
+@media (max-width:799px){
+  .view-home .hero{min-height:390px;padding:38px 4px 44px}
+  .view-home .hero h1{font-size:clamp(56px,16vw,72px)}
+  .desktopScrollCue{display:none}
+  .desktopHeroActions button{min-height:44px}
+  .calendarHead button{width:44px;height:44px}
+  .homeStart{margin:0 0 48px;grid-template-columns:1fr}
+  .homeStartMeta,.homeStartStatus{min-height:74px;padding:16px 17px}
+  .homeStartMeta{border-right:0;border-bottom:1px solid var(--mag-black);flex-direction:row;align-items:center;gap:16px}
+  .homeStartMeta b{font-size:18px}
+  .homeStartStatus{border-right:0;border-bottom:1px solid var(--mag-black);justify-content:flex-start}
+  .homeStartActions>button{min-height:112px;padding:15px;grid-template-columns:auto 1fr}
+  .homeStartActions>button>svg:last-child{display:none}
+  .homeStartActions b{font-size:12px}.homeStartActions small{line-height:1.35}
+  .homeStartSchedule{right:0}
+  .roomPrejoin{padding-top:12px}.prejoinCard{padding:28px 20px}.prejoinCard h1{font-size:44px}.prejoinActions{grid-template-columns:1fr}.prejoinActions button+button{border-left:1px solid var(--mag-black);border-top:0}
+
+  .mobileNavigation{position:fixed;left:0;right:0;bottom:0;z-index:30;display:block;pointer-events:none}
+  .mobileNavigation .mobileDock{position:relative;left:auto;bottom:auto;width:100%;height:calc(78px + env(safe-area-inset-bottom));padding:5px max(8px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(8px,env(safe-area-inset-left));display:grid;grid-template-columns:1fr 1fr 72px 1fr 1fr;background:rgba(247,246,241,.97);border-top:1px solid var(--mag-black);backdrop-filter:blur(18px);pointer-events:auto}
+  .mobileDock>button{min-width:0;min-height:54px;border-radius:0;background:transparent!important;color:var(--mag-muted);gap:4px}
+  .mobileDock>button:nth-child(3){grid-column:4}.mobileDock>button:nth-child(4){grid-column:5}
+  .mobileDock>button.active{color:var(--mag-black)}
+  .mobileDock>button.active:after{content:"";width:20px;height:2px;background:var(--mag-live)}
+  .mobileDock>button svg{width:19px}.mobileDock>button small{font-size:9px}
+  .mobileLiveAction{position:absolute;left:50%;top:-24px;transform:translateX(-50%);width:70px;height:70px;padding:0;border:1px solid var(--mag-black);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:var(--mag-black);color:white;box-shadow:0 6px 0 rgba(17,18,16,.18);pointer-events:auto}
+  .mobileLiveAction:hover,.mobileLiveAction.active{background:var(--mag-live)}
+  .mobileLiveAction:active{transform:translateX(-50%) translateY(3px);box-shadow:0 2px 0 rgba(17,18,16,.18)}
+  .mobileLiveAction svg{width:20px}.mobileLiveAction small{font-size:8px;font-weight:700;letter-spacing:.03em}
+}

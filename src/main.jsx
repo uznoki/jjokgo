@@ -1,6 +1,6 @@
 import React,{useEffect,useRef,useState}from"react";
 import{createRoot}from"react-dom/client";
-import{Home,Users,Mic,BookOpen,UserRound,Lock,ChevronRight,LogOut,Mail,KeyRound,Camera,Pencil,Save,X}from"lucide-react";
+import{Home,Users,Mic,BookOpen,UserRound,Lock,ChevronRight,LogOut,Mail,KeyRound,Camera,Pencil,Save,X,Clock3}from"lucide-react";
 import{supabase}from"./supabase";
 import{LiveRoom}from"./components/LiveRoom";
 import{CreateRoom,Rooms}from"./components/Rooms";
@@ -57,6 +57,10 @@ function App(){
     };
   },[]);
 
+  useEffect(()=>{
+    window.scrollTo({top:0,left:0,behavior:"auto"});
+  },[v]);
+
   const isGuest=Boolean(session?.user?.is_anonymous);
   const openAuth=()=>setV("auth");
   const openRooms=()=>setV(session?"rooms":"auth");
@@ -85,16 +89,16 @@ function App(){
         <button className="brand" onClick={()=>setV("home")} aria-label="쪽GO 홈으로">
           <BrandWordmark/>
         </button>
-        <div className="mastNav" data-active={v==="home"?"journal":v==="library"?"library":["modes","flow","rooms","createRoom","room","guest"].includes(v)?"rooms":"none"} aria-label="주요 메뉴">
-          <button className={v==="home"?"active":""} aria-current={v==="home"?"page":undefined} onClick={()=>setV("home")}>JOURNAL</button>
-          <button className={["modes","flow","rooms","createRoom","room","guest"].includes(v)?"active":""} aria-current={["modes","flow","rooms","createRoom","room","guest"].includes(v)?"page":undefined} onClick={openModes}>LIVE ROOMS</button>
-          <button className={v==="library"?"active":""} aria-current={v==="library"?"page":undefined} onClick={openLibrary}>LIBRARY</button>
+        <div className="mastNav" role="navigation" data-active={v==="home"?"journal":v==="library"?"library":["modes","flow","rooms","createRoom","room","guest"].includes(v)?"rooms":"none"} aria-label="주요 메뉴">
+          <button className={v==="home"?"active":""} aria-current={v==="home"?"page":undefined} onClick={()=>setV("home")}><span>JOURNAL</span><b>홈</b></button>
+          <button className={["modes","flow","rooms","createRoom","room","guest"].includes(v)?"active":""} aria-current={["modes","flow","rooms","createRoom","room","guest"].includes(v)?"page":undefined} onClick={openModes}><span>LIVE</span><b>읽기방</b></button>
+          <button className={v==="library"?"active":""} aria-current={v==="library"?"page":undefined} onClick={openLibrary}><span>LIBRARY</span><b>내 서재</b></button>
         </div>
         <button className="headAccount" onClick={()=>setV(accountView)}>
           <UserRound/>{isGuest?"게스트":session?"MY":"로그인"}
         </button>
       </header>
-      {loading?<div className="loading">쪽GO 불러오는 중…</div>:<>
+      {loading?<div className="loading" role="status" aria-live="polite">쪽GO 불러오는 중…</div>:<>
         {v==="guest"&&inviteCode&&<GuestJoin inviteCode={inviteCode} session={session} onJoined={finishGuest} onCancel={cancelGuest}/>}
         {v==="home"&&<HomeP setV={setV} session={session} openAuth={openAuth} openRoom={openRoom}/>}
         {v==="modes"&&<ReadingModes onBack={()=>setV("home")} onFlow={()=>setV("flow")} onPage={openRooms}/>}
@@ -107,13 +111,15 @@ function App(){
         {v==="auth"&&<Auth setV={setV}/>}
       </>}
     </main>
-    {v!=="auth"&&v!=="guest"&&<nav className="mobileDock">
-      <N i={<Home/>} t="홈" f={()=>setV("home")} active={v==="home"}/>
-      <N i={<Users/>} t="쪽GO" f={openModes} active={["modes","flow","rooms","createRoom","room"].includes(v)}/>
-      <button className={`mic ${["modes","flow","room"].includes(v)?"active":""}`} aria-label="쪽GO 읽기 방식 선택" onClick={openModes}><Mic/><small>LIVE</small></button>
-      <N i={<BookOpen/>} t="내 서재" f={openLibrary} active={v==="library"}/>
-      <N i={<UserRound/>} t="MY" f={()=>setV(accountView)} active={["my","auth"].includes(v)}/>
-    </nav>}
+    {v!=="auth"&&v!=="guest"&&<div className="mobileNavigation">
+      <nav className="mobileDock" aria-label="주요 메뉴">
+        <N i={<Home/>} t="홈" f={()=>setV("home")} active={v==="home"}/>
+        <N i={<Users/>} t="읽기방" f={openModes} active={["modes","flow","rooms","createRoom","room"].includes(v)}/>
+        <N i={<BookOpen/>} t="내 서재" f={openLibrary} active={v==="library"}/>
+        <N i={<UserRound/>} t="MY" f={()=>setV(accountView)} active={["my","auth"].includes(v)}/>
+      </nav>
+      <button className={`mobileLiveAction ${["modes","flow","room"].includes(v)?"active":""}`} aria-label="LIVE 읽기 시작" onClick={openModes}><Mic/><small>LIVE 시작</small></button>
+    </div>}
     <footer className="desktopFooter">
       <span>© 2026 JJOKGO</span>
       <div>
@@ -130,7 +136,56 @@ function Auth({setV}){const[mode,setMode]=useState("login"),[email,setEmail]=use
 async function submit(e){e.preventDefault();setBusy(true);setMsg("");try{if(mode==="signup"){const cleanNickname=nickname.trim();const{data,error}=await supabase.auth.signUp({email:email.trim(),password,options:{data:{nickname:cleanNickname},emailRedirectTo:window.location.origin}});if(error)throw error;if(data.session){setMsg("가입 완료! 로그인되었습니다.");setTimeout(()=>setV("my"),600)}else setMsg("가입 완료! 이메일로 보낸 인증 링크를 눌러주세요.")}else{const{error}=await supabase.auth.signInWithPassword({email:email.trim(),password});if(error)throw error;setV("my")}}catch(err){setMsg(translateAuthError(err.message))}finally{setBusy(false)}}
 return <section className="auth"><button className="back" onClick={()=>setV("home")}>‹ 홈으로</button><h1>{mode==="login"?"다시 만나 반가워요":"쪽GO를 시작해요"}</h1><p>{mode==="login"?"로그인하고 함께 읽던 책을 이어가세요.":"한 쪽씩, 함께 읽는 계정을 만들어보세요."}</p><div className="authTabs"><button type="button" className={mode==="login"?"active":""} onClick={()=>{setMode("login");setMsg("")}}>로그인</button><button type="button" className={mode==="signup"?"active":""} onClick={()=>{setMode("signup");setMsg("")}}>회원가입</button></div><form onSubmit={submit}>{mode==="signup"&&<label>닉네임<input required maxLength="30" autoComplete="nickname" value={nickname} onChange={e=>setNickname(e.target.value)} placeholder="쪽GO에서 사용할 이름"/></label>}<label><Mail/> 이메일<input required type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="name@example.com"/></label><label><KeyRound/> 비밀번호<input required minLength="6" autoComplete={mode==="login"?"current-password":"new-password"} type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="6자 이상"/></label><button className="wide" disabled={busy}>{busy?"처리 중…":mode==="login"?"로그인":"회원가입"}</button></form>{msg&&<div className="authMsg" role="status">{msg}</div>}<small className="authNote">회원가입 시 입력한 이메일로 인증 메일이 발송됩니다.</small></section>}
 function translateAuthError(m=""){if(m.includes("Invalid login credentials"))return"이메일 또는 비밀번호를 확인해주세요.";if(m.includes("already registered"))return"이미 가입된 이메일이에요.";if(m.includes("Password should"))return"비밀번호는 6자 이상으로 입력해주세요.";if(m.toLowerCase().includes("email rate limit"))return"인증 메일 요청이 잠시 많아요. 초대 링크가 있다면 게스트로 바로 입장할 수 있어요.";return"로그인 처리 중 문제가 생겼어요. 잠시 후 다시 시도해주세요."}
-function HomeP({setV,session,openAuth,openRoom}){const openRooms=()=>session?setV("rooms"):openAuth();return <><section className="hero"><div><small className="heroEyebrow">READ TOGETHER</small><h1>한 쪽씩,<br/>함께 GO.</h1><p>같은 책을 펼치고 서로의 목소리를 들으며,<br/>오늘의 한 쪽을 함께 읽어요.</p><div className="desktopHeroActions"><button onClick={()=>setV("modes")}>지금 함께 읽기 <ChevronRight/></button><button onClick={openRooms}>열린 방 보기</button></div><span className="desktopScrollCue" aria-hidden="true">SCROLL TO READ <b>↓</b></span></div><div className="heroArt" aria-hidden="true"><div className="editorialTile tileMain"><span>오늘의 LIVE</span><b>같은 책,<br/>서로의 목소리</b><Mic/></div><div className="editorialTile tilePage"><small>NOW READING</small><b>17쪽</b></div><div className="editorialTile tilePeople"><small>TOGETHER</small><b>3명 LIVE</b></div></div></section>{!session&&<button className="welcome" onClick={openAuth}><UserRound/><span><b>내 독서 기록을 이어가세요</b><small>로그인하면 읽기방과 기록을 안전하게 보관할 수 있어요.</small></span><ChevronRight/></button>}<section className="homeActions" aria-label="빠른 시작"><button className="primaryAction" onClick={()=>setV("modes")}><span className="actionIcon"><Mic/></span><span><small>오늘의 읽기 방식</small><b>FLOW 또는 PAGE</b><em>스크립트를 따라 읽거나, 각자의 책으로 읽어요</em></span><ChevronRight/></button><button className="secondaryAction" onClick={()=>setV("flow")}><BookOpen/><span><b>쪽GO FLOW</b><small>공개 원문을 화면의 리듬에 맞춰 읽기</small></span><ChevronRight/></button><button className="codeAction" onClick={openRooms}><Lock/> PAGE 초대 코드로 입장</button></section><section className="homeFormatStrip"><span><b>FLOW</b> 화면의 문장을 따라 읽기</span><i/><span><b>PAGE</b> 각자의 책과 LIVE 음성으로 읽기</span></section><RecommendedBooks onFlow={()=>setV("flow")} onRooms={openRooms} onCreate={()=>session?setV("createRoom"):openAuth()}/><h3>나의 읽기 현황</h3><HomeScheduleCalendar session={session}/>{session&&<><h3>참여 중인 방</h3><MyJoinedRooms session={session} onOpen={openRoom}/></>}</>}
+function HomeP({setV,session,openAuth,openRoom}){const openRooms=()=>session?setV("rooms"):openAuth();return <><section className="hero"><div><small className="heroEyebrow">READ TOGETHER</small><h1>한 쪽씩,<br/>함께 GO.</h1><p>같은 책을 펼치고 서로의 목소리를 들으며,<br/>오늘의 한 쪽을 함께 읽어요.</p><div className="desktopHeroActions"><button onClick={()=>setV("modes")}>지금 함께 읽기 <ChevronRight/></button><button onClick={openRooms}>초대 코드로 입장</button></div></div><div className="heroArt" aria-hidden="true"><div className="editorialTile tileMain"><span>오늘의 LIVE</span><b>같은 책,<br/>서로의 목소리</b><Mic/></div><div className="editorialTile tilePage"><small>NOW READING</small><b>17쪽</b></div><div className="editorialTile tilePeople"><small>TOGETHER</small><b>3명 LIVE</b></div></div></section><HomeStart session={session} setV={setV} openRooms={openRooms}/>{!session&&<button className="welcome" onClick={openAuth}><UserRound/><span><b>내 독서 기록을 이어가세요</b><small>로그인하면 읽기방과 기록을 안전하게 보관할 수 있어요.</small></span><ChevronRight/></button>}<section className="homeFormatStrip"><span><b>FLOW</b> 화면의 문장을 따라 읽기</span><i/><span><b>PAGE</b> 각자의 책과 LIVE 음성으로 읽기</span></section><RecommendedBooks onFlow={()=>setV("flow")} onRooms={openRooms} onCreate={()=>session?setV("createRoom"):openAuth()}/><h3>나의 읽기 현황</h3><HomeScheduleCalendar session={session}/>{session&&<><h3>참여 중인 방</h3><MyJoinedRooms session={session} onOpen={openRoom}/></>}</>}
+
+function nextScheduleLabel(schedules){
+  const now=new Date();
+  let best=null;
+  for(const schedule of schedules.filter(item=>item.is_active)){
+    for(let offset=0;offset<=7;offset+=1){
+      const date=new Date(now);
+      date.setDate(now.getDate()+offset);
+      const weekday=(date.getDay()+6)%7;
+      if(!Array.isArray(schedule.weekdays)||!schedule.weekdays.includes(weekday))continue;
+      const [hours,minutes]=String(schedule.start_time||"00:00").split(":").map(Number);
+      date.setHours(hours,minutes,0,0);
+      if(date<now)continue;
+      if(!best||date<best.date)best={schedule,date,offset};
+      break;
+    }
+  }
+  if(!best)return null;
+  const day=best.offset===0?"오늘":best.offset===1?"내일":`${best.date.getMonth()+1}월 ${best.date.getDate()}일`;
+  return {...best.schedule,day};
+}
+
+function HomeStart({session,setV,openRooms}){
+  const[schedules,setSchedules]=useState([]);
+  const[loading,setLoading]=useState(Boolean(session));
+  useEffect(()=>{
+    let active=true;
+    if(!session){setSchedules([]);setLoading(false);return()=>{active=false}};
+    setLoading(true);
+    fetchReadingSchedules(session.user.id)
+      .then(data=>{if(active)setSchedules(data)})
+      .catch(error=>{console.error("Home start schedule load failed",error);if(active)setSchedules([])})
+      .finally(()=>{if(active)setLoading(false)});
+    return()=>{active=false};
+  },[session?.user?.id]);
+  const next=nextScheduleLabel(schedules);
+  return <section className="homeStart" aria-labelledby="home-start-title">
+    <div className="homeStartMeta"><small>START HERE</small><b id="home-start-title">오늘, 어떻게 읽을까요?</b></div>
+    <div className="homeStartStatus" aria-live="polite">
+      <Clock3/>
+      <span><small>{loading?"일정 확인 중":next?`${next.day} · ${next.start_time}`:"NEXT READING"}</small><b>{loading?"나의 일정을 불러오고 있어요":next?next.title:"지금 바로 함께 읽을 수 있어요"}</b></span>
+    </div>
+    <div className="homeStartActions">
+      <button className="homeStartPrimary" onClick={()=>setV("modes")}><Mic/><span><b>LIVE 읽기 시작</b><small>FLOW 또는 PAGE 선택</small></span><ChevronRight/></button>
+      <button onClick={openRooms}><Lock/><span><b>초대 코드로 입장</b><small>받은 코드로 바로 참여</small></span><ChevronRight/></button>
+    </div>
+    {session&&<button className="homeStartSchedule" onClick={()=>setV("my")}>{next?"내 일정 전체 보기":"MY에서 첫 읽기 일정 만들기"} <ChevronRight/></button>}
+  </section>;
+}
 function RecommendedBooks({onFlow,onRooms,onCreate}){
   const books=[
     {title:"운수 좋은 날",label:"FLOW로 읽기",number:"01",action:onFlow},

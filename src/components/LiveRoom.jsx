@@ -1,5 +1,5 @@
 import {useCallback,useEffect,useRef,useState} from "react";
-import {Pencil} from "lucide-react";
+import {CheckCircle2,Headphones,Mic,Pencil} from "lucide-react";
 import {supabase} from "../supabase";
 import {RemoteAudio} from "./RemoteAudio";
 import {useLiveKitRoom} from "../hooks/useLiveKitRoom";
@@ -15,7 +15,56 @@ function participantStatus(participant){
   return "듣는 중";
 }
 
-export function LiveRoom({room,setView,session}){
+function RoomPrejoin({room,onBack,onEnter}){
+  const [micCheck,setMicCheck]=useState("idle");
+  const [message,setMessage]=useState("입장 전 마이크를 확인하거나, 듣기 모드로 조용히 들어갈 수 있어요.");
+
+  async function enterWithMic(){
+    if(!navigator.mediaDevices?.getUserMedia){
+      setMicCheck("error");
+      setMessage("이 브라우저에서는 마이크 확인을 지원하지 않아요. 듣기 모드로 입장한 뒤 다시 시도해주세요.");
+      return;
+    }
+    setMicCheck("checking");
+    setMessage("브라우저의 마이크 사용 요청을 확인해주세요.");
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      stream.getTracks().forEach(track=>track.stop());
+      setMicCheck("ready");
+      setMessage("마이크 확인 완료. LIVE 방에 입장합니다.");
+      onEnter(true);
+    }catch(error){
+      setMicCheck("error");
+      setMessage(error?.name==="NotAllowedError"?"마이크 권한이 꺼져 있어요. 브라우저 설정에서 허용하거나 듣기 모드로 입장해주세요.":"마이크를 확인하지 못했어요. 듣기 모드로 입장한 뒤 다시 시도해주세요.");
+    }
+  }
+
+  return <section className="roomPrejoin" aria-labelledby="prejoin-title">
+    <button className="back" onClick={onBack}>‹ 읽기방으로</button>
+    <div className="prejoinCard">
+      <small>BEFORE YOU JOIN</small>
+      <h1 id="prejoin-title">목소리를 준비하고<br/>읽기방에 들어가요.</h1>
+      <p>{room?.name||"쪽GO PAGE"}</p>
+      <div className={`prejoinStatus ${micCheck}`} role="status" aria-live="polite">
+        {micCheck==="ready"?<CheckCircle2/>:<Mic/>}<span><b>{micCheck==="checking"?"마이크 확인 중":micCheck==="ready"?"마이크 사용 가능":micCheck==="error"?"마이크 확인 필요":"입장 방식을 선택하세요"}</b><small>{message}</small></span>
+      </div>
+      <div className="prejoinActions">
+        <button className="prejoinListen" onClick={()=>onEnter(false)}><Headphones/><span><b>듣기 모드로 입장</b><small>마이크를 켜지 않고 참여</small></span></button>
+        <button className="prejoinMic" onClick={enterWithMic} disabled={micCheck==="checking"}><Mic/><span><b>{micCheck==="checking"?"확인 중…":"마이크 켜고 입장"}</b><small>권한과 입력 장치 먼저 확인</small></span></button>
+      </div>
+      <em>입장 후에도 언제든 마이크를 켜거나 끌 수 있어요.</em>
+    </div>
+  </section>;
+}
+
+export function LiveRoom(props){
+  const [entryMode,setEntryMode]=useState(null);
+  if(!props.room?.id)return <><button className="back" onClick={()=>props.setView("rooms")}>‹ 읽기방으로</button><div className="liveMessage error">유효한 읽기방을 찾지 못했어요. 읽기방 목록에서 다시 선택해주세요.</div></>;
+  if(entryMode===null)return <RoomPrejoin room={props.room} onBack={()=>props.setView("rooms")} onEnter={setEntryMode}/>;
+  return <ConnectedLiveRoom {...props} startWithMic={entryMode}/>;
+}
+
+function ConnectedLiveRoom({room,setView,session,startWithMic=false}){
   const initialPage=Math.max(1,Number(room?.current_page||room?.reading_start_page)||1);
   const [page,setPage]=useState(initialPage);
   const pageRef=useRef(initialPage);
@@ -32,6 +81,7 @@ export function LiveRoom({room,setView,session}){
   const pageSaveChainRef=useRef(Promise.resolve());
   const audioElementsRef=useRef(new Map());
   const [blockedAudioIds,setBlockedAudioIds]=useState([]);
+  const initialMicStartedRef=useRef(false);
 
   const maximumPage=plan.totalPages||20000;
   const isOwner=room?.owner_id===session?.user?.id&&!session?.user?.is_anonymous;
@@ -48,6 +98,12 @@ export function LiveRoom({room,setView,session}){
   const peerLive=useLiveRoom({roomId:room?.id,displayName,initialPage,onRemotePage,enabled:!liveKitEnabled});
   const liveKitLive=useLiveKitRoom({roomId:room?.id,session,initialPage,onRemotePage,enabled:liveKitEnabled});
   const live=liveKitEnabled?liveKitLive:peerLive;
+
+  useEffect(()=>{
+    if(!startWithMic||initialMicStartedRef.current||live.channelState!=="connected")return;
+    initialMicStartedRef.current=true;
+    live.toggleMic();
+  },[startWithMic,live.channelState,live.toggleMic]);
 
   const onAudioElement=useCallback((id,element)=>{
     if(element)audioElementsRef.current.set(id,element);
@@ -123,13 +179,6 @@ export function LiveRoom({room,setView,session}){
     setPlan({totalPages:total,startPage:start,endPage:end});
     setPage(nextPage);pageRef.current=nextPage;setPageInput(String(nextPage));live.broadcastPage(nextPage);
     setEditingPlan(false);setSavingPlan(false);setPageMessage("읽기 범위를 저장했어요.");
-  }
-
-  if(!room?.id){
-    return <>
-      <button className="back" onClick={()=>setView("rooms")}>‹ 읽기방으로</button>
-      <div className="liveMessage error">유효한 읽기방을 찾지 못했어요. 읽기방 목록에서 다시 선택해주세요.</div>
-    </>;
   }
 
   const connectedCount=live.participants.filter(item=>item.connectionState==="connected").length;
