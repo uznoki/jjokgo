@@ -389,6 +389,24 @@ nav .mic.active{background:var(--mag-live)}
 .podcastReady{grid-column:1/-1;padding:18px;border:1px solid var(--mag-black);display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px 18px;background:var(--mag-lime)}.podcastReady>b{grid-row:1/3;color:var(--mag-live);font-size:9px;letter-spacing:.08em}.podcastReady>span{font-size:13px;font-weight:700}.podcastReady>small{grid-column:2;color:var(--mag-muted);font-size:9px}.podcastReady>button{grid-column:3;grid-row:1/3;min-height:44px;padding:0 13px;border:1px solid var(--mag-black);display:flex;align-items:center;gap:7px;background:transparent;font-size:9px;font-weight:700}.podcastReady>button svg{width:14px}
 .recordingMessage{margin:0;padding:12px 18px;border-top:1px solid var(--mag-line);color:var(--mag-muted);font-size:9px;line-height:1.55}
 
+/* A quiet, editorial stamp book. Achievements are progress records, not a noisy game layer. */
+.stampBook{margin:44px 0 70px;border:1px solid var(--mag-black);background:var(--mag-white)}
+.stampBookHeader{height:auto;min-height:150px;padding:26px 28px;border-bottom:1px solid var(--mag-black);display:flex;align-items:flex-start;justify-content:space-between;gap:32px}
+.stampBookHeader>div:first-child{max-width:720px}.stampBookHeader small{color:var(--mag-live);font-size:8px;font-weight:700;letter-spacing:.14em}
+.stampBookHeader h3{margin:10px 0 9px;padding:0;border:0;font-size:clamp(27px,3.3vw,42px);font-weight:500;line-height:1.05;letter-spacing:-.06em}.stampBookHeader h3:after{display:none}
+.stampBookHeader p{margin:0;color:var(--mag-muted);font-size:10px;line-height:1.65}
+.stampBookCount{min-width:92px;display:grid;grid-template-columns:auto auto;align-items:baseline;justify-content:end}.stampBookCount b{font-size:42px;font-weight:500;line-height:1}.stampBookCount span{color:var(--mag-muted);font-size:13px}.stampBookCount small{grid-column:1/-1;margin-top:7px;text-align:right;color:var(--mag-muted);font-size:7px;letter-spacing:.12em}
+.stampGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.stampCard{position:relative;min-width:0;min-height:244px;padding:22px 18px 18px;border-right:1px solid var(--mag-line);border-bottom:1px solid var(--mag-line);display:flex;flex-direction:column;align-items:flex-start;background:var(--mag-paper)}
+.stampCard:nth-child(4n){border-right:0}.stampCard:nth-last-child(-n+4){border-bottom:0}
+.stampSeal{--stamp-color:var(--mag-live);width:86px;height:86px;padding:5px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--stamp-color) var(--stamp-progress),#deddd6 0);transform:rotate(-5deg)}
+.stampCard.lime .stampSeal{--stamp-color:var(--mag-lime)}.stampCard.blue .stampSeal{--stamp-color:var(--mag-blue)}
+.stampSeal span{width:100%;height:100%;border:1px solid var(--mag-line);border-radius:50%;display:grid;place-items:center;background:var(--mag-white);color:var(--mag-muted);font-size:11px;font-weight:800;letter-spacing:.055em}
+.stampCard.earned .stampSeal{background:var(--stamp-color);box-shadow:inset 0 0 0 3px var(--mag-white),inset 0 0 0 5px var(--stamp-color)}.stampCard.earned .stampSeal span{border:1px dashed var(--mag-black);background:transparent;color:var(--mag-black)}
+.stampCopy{margin-top:17px;display:flex;flex-direction:column;align-items:flex-start;gap:3px}.stampCopy small{color:var(--mag-muted);font-size:7px;font-weight:700;letter-spacing:.12em}.stampCard.earned .stampCopy small{color:var(--mag-live)}.stampCopy b{font-size:14px;font-weight:600;letter-spacing:-.035em}.stampCopy span{color:var(--mag-muted);font-size:9px}
+.stampProgress{width:100%;height:2px;margin-top:auto;background:#deddd6;overflow:hidden}.stampProgress i{display:block;height:100%;background:var(--mag-black)}.stampCard em{margin-top:7px;color:var(--mag-muted);font-size:8px;font-style:normal}
+.stampBook>footer{min-height:68px;padding:17px 28px;border-top:1px solid var(--mag-black);display:flex;align-items:center;justify-content:space-between;gap:24px;background:var(--mag-black);color:white}.stampBook>footer b{font-size:10px}.stampBook>footer span{color:#aaa;font-size:8px;text-align:right}
+
 @media (max-width:799px){
   .recordingStudio{margin-top:32px}.recordingStudioHeader{height:auto;min-height:0;padding:20px 16px;align-items:flex-start;flex-direction:column;gap:14px}.recordingStudioHeader h3{font-size:29px}.recordingState{align-self:flex-start}
   .recordingActive{align-items:flex-start;flex-direction:column}.recordingActive button{width:100%;justify-content:center}
@@ -540,6 +558,8 @@ header>button.headAccount{min-height:44px}
   .homeStartActions b{font-size:12px}.homeStartActions small{line-height:1.35}
   .homeStartSchedule{right:0}
   .roomPrejoin{padding-top:12px}.prejoinCard{padding:28px 20px}.prejoinCard h1{font-size:44px}.prejoinActions{grid-template-columns:1fr}.prejoinActions button+button{border-left:1px solid var(--mag-black);border-top:0}
+  .stampBook{margin:38px 0 48px}.stampBookHeader{min-height:0;padding:22px 18px;flex-direction:column;gap:20px}.stampBookHeader h3{font-size:29px}.stampBookCount{align-self:flex-end}.stampBookCount b{font-size:34px}
+  .stampGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.stampCard{min-height:220px;padding:18px 14px}.stampCard:nth-child(4n){border-right:1px solid var(--mag-line)}.stampCard:nth-child(2n){border-right:0}.stampCard:nth-last-child(-n+4){border-bottom:1px solid var(--mag-line)}.stampCard:nth-last-child(-n+2){border-bottom:0}.stampSeal{width:76px;height:76px}.stampBook>footer{padding:16px 18px;align-items:flex-start;flex-direction:column;gap:5px}.stampBook>footer span{text-align:left;line-height:1.5}
 
   .mobileNavigation{position:fixed;left:0;right:0;bottom:0;z-index:30;display:block;pointer-events:none}
   .mobileNavigation .mobileDock{position:relative;left:auto;bottom:auto;width:100%;height:calc(78px + env(safe-area-inset-bottom));padding:5px max(8px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(8px,env(safe-area-inset-left));display:grid;grid-template-columns:1fr 1fr 72px 1fr 1fr;background:rgba(247,246,241,.97);border-top:1px solid var(--mag-black);backdrop-filter:blur(18px);pointer-events:auto}

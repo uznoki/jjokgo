@@ -1,5 +1,6 @@
 import {useEffect,useRef,useState} from "react";
 import {Download,Mic,Podcast,Square,Trash2} from "lucide-react";
+import {recordReadingActivity} from "../services/readingProgress";
 
 function supportedMimeType(){
   if(typeof MediaRecorder==="undefined")return "";
@@ -16,11 +17,13 @@ function extensionFor(type){
   return type.includes("mp4")?"m4a":"webm";
 }
 
-export function RecordingStudio({roomName="쪽GO 낭독",bookTitle="함께 읽는 책",variant="page"}){
+export function RecordingStudio({roomName="쪽GO 낭독",bookTitle="함께 읽는 책",variant="page",session}){
   const recorderRef=useRef(null);
   const streamRef=useRef(null);
   const timerRef=useRef(null);
   const chunksRef=useRef([]);
+  const durationRef=useRef(0);
+  const recordingIdRef=useRef("");
   const [status,setStatus]=useState("idle");
   const [seconds,setSeconds]=useState(0);
   const [recording,setRecording]=useState(null);
@@ -61,8 +64,9 @@ export function RecordingStudio({roomName="쪽GO 낭독",bookTitle="함께 읽�
         const blob=new Blob(chunksRef.current,{type});
         setRecording(previous=>{
           if(previous?.url)URL.revokeObjectURL(previous.url);
-          return {blob,url:URL.createObjectURL(blob),type,duration:seconds||1,createdAt:new Date()};
+          return {id:recordingIdRef.current,blob,url:URL.createObjectURL(blob),type,duration:durationRef.current||1,createdAt:new Date()};
         });
+        recordReadingActivity(session,{recordings:1,minutesRecorded:Math.max(1,Math.ceil(durationRef.current/60))},`recording:${recordingIdRef.current}`);
         stream.getTracks().forEach(track=>track.stop());
         streamRef.current=null;
         recorderRef.current=null;
@@ -70,11 +74,13 @@ export function RecordingStudio({roomName="쪽GO 낭독",bookTitle="함께 읽�
         setMessage("내 낭독 기록이 이 기기에 임시로 준비됐어요. 다시 듣거나 파일로 내려받을 수 있어요.");
       };
       setSeconds(0);
+      durationRef.current=0;
+      recordingIdRef.current=crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
       setStatus("recording");
       recorder.start(1000);
       const startedAt=Date.now();
       window.clearInterval(timerRef.current);
-      timerRef.current=window.setInterval(()=>setSeconds(Math.floor((Date.now()-startedAt)/1000)),500);
+      timerRef.current=window.setInterval(()=>{durationRef.current=Math.floor((Date.now()-startedAt)/1000);setSeconds(durationRef.current)},500);
     }catch(error){
       setStatus("idle");
       setMessage(error?.name==="NotAllowedError"?"마이크 권한이 꺼져 있어요. 브라우저 설정에서 허용해주세요.":"녹음을 시작하지 못했어요. 마이크 연결을 확인해주세요.");
@@ -113,6 +119,7 @@ export function RecordingStudio({roomName="쪽GO 낭독",bookTitle="함께 읽�
       return;
     }
     setDraftReady(true);
+    recordReadingActivity(session,{podcastDrafts:1},`podcast:${recording.id}`);
     setMessage("팟캐스트 초안이 준비됐어요. 지금은 오디오를 내려받아 검토한 뒤 발행하는 안전한 단계입니다.");
   }
 

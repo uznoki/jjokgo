@@ -9,6 +9,7 @@ import{GuestJoin}from"./components/GuestJoin";
 import{BrandWordmark}from"./components/BrandWordmark";
 import{ScheduleManager}from"./components/ScheduleManager";
 import{FlowReader,ReadingModes}from"./components/FlowReader";
+import{StampBook}from"./components/StampBook";
 import{fetchJoinedReadingRooms,normalizeInviteCode}from"./services/readingRooms";
 import{fetchReadingSchedules}from"./services/readingSchedules";
 import"./style.css";
@@ -377,6 +378,7 @@ function My({session,setV,openRoom}){
     {message&&<div className="profileMessage" role="status">{message}</div>}
     <button className="logout" onClick={logout}><LogOut/> 로그아웃</button>
     <h3>이번 달 나의 읽기</h3><div className="stats"><div>시작 전<b>2권</b></div><div>읽는 중<b>3권</b></div><div>읽기 완료<b>1권</b></div></div>
+    <StampBook session={session}/>
     <h3>나의 읽기 달력</h3><Calendar schedules={schedules} showDiary={false}/><ScheduleManager session={session} onSchedulesChange={setSchedules}/>
     <h3>참여 중인 방</h3><MyJoinedRooms session={session} onOpen={openRoom}/>
   </>;

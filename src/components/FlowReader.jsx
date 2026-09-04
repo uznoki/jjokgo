@@ -4,6 +4,7 @@ import {supabase} from "../supabase";
 import {useLiveKitRoom} from "../hooks/useLiveKitRoom";
 import {RemoteAudio} from "./RemoteAudio";
 import {RecordingStudio} from "./RecordingStudio";
+import {recordReadingActivity} from "../services/readingProgress";
 
 const FLOW_LINES=[
   "새침하게 흐린 품이 눈이 올 듯하더니 눈은 아니 오고 얼다가 만 비가 추적추적 내리었다.",
@@ -88,6 +89,7 @@ export function FlowReader({session,onBack}){
   const audioElementsRef=useRef(new Map());
   const lineRef=useRef(FLOW_LINES[0]);
   const indexRef=useRef(0);
+  const flowSessionRecordedRef=useRef(false);
   const liveKitEnabled=import.meta.env.VITE_LIVEKIT_ENABLED==="true";
   const SpeechRecognition=typeof window!=="undefined"&&(window.SpeechRecognition||window.webkitSpeechRecognition);
 
@@ -177,6 +179,10 @@ export function FlowReader({session,onBack}){
       return;
     }
     if(live.micState!=="live")await live.toggleMic();
+    if(!flowSessionRecordedRef.current){
+      flowSessionRecordedRef.current=true;
+      recordReadingActivity(session,{flowSessions:1},`flow:${FLOW_ROOM_ID}:${new Date().toISOString().slice(0,10)}`);
+    }
     setPlaying(true);
   }
 
@@ -229,7 +235,7 @@ export function FlowReader({session,onBack}){
 
     {session&&<section className="flowParticipants"><div><small>NOW IN FLOW</small><b>함께 읽는 사람</b></div><div>{live.participants.map(participant=><span key={participant.id} className={participant.micState}><i/>{participant.name}<small>{participant.micState==="live"?"읽는 중":participant.micState==="muted"?"음소거":"듣는 중"}</small></span>)}</div><p>{SpeechRecognition?"말한 길이를 감지해 글자 색을 따라가며, 선택한 속도가 자연스럽게 보조합니다.":"이 브라우저에서는 선택한 읽기 속도에 맞춰 글자 색이 진행됩니다."}</p></section>}
 
-    {session&&<RecordingStudio roomName="쪽GO FLOW" bookTitle="운수 좋은 날" variant="flow"/>}
+    {session&&<RecordingStudio roomName="쪽GO FLOW" bookTitle="운수 좋은 날" variant="flow" session={session}/>}
 
     <aside className="flowRights">
       <ShieldCheck/>

@@ -5,6 +5,7 @@ import {RemoteAudio} from "./RemoteAudio";
 import {RecordingStudio} from "./RecordingStudio";
 import {useLiveKitRoom} from "../hooks/useLiveKitRoom";
 import {useLiveRoom} from "../hooks/useLiveRoom";
+import {recordReadingActivity} from "../services/readingProgress";
 
 function participantStatus(participant){
   if(participant.connectionState==="failed")return "연결 실패";
@@ -83,6 +84,7 @@ function ConnectedLiveRoom({room,setView,session,startWithMic=false}){
   const audioElementsRef=useRef(new Map());
   const [blockedAudioIds,setBlockedAudioIds]=useState([]);
   const initialMicStartedRef=useRef(false);
+  const sharedSessionRecordedRef=useRef(false);
 
   const maximumPage=plan.totalPages||20000;
   const isOwner=room?.owner_id===session?.user?.id&&!session?.user?.is_anonymous;
@@ -145,12 +147,17 @@ function ConnectedLiveRoom({room,setView,session,startWithMic=false}){
   },[enableRemoteAudio]);
 
   function changePage(next){
+    const previousPage=pageRef.current;
     const safePage=Math.max(1,Math.min(maximumPage,Number(next)||1));
     pageRef.current=safePage;
     setPage(safePage);
     setPageInput(String(safePage));
     setPageMessage("");
     live.broadcastPage(safePage);
+    if(live.micState==="live"&&safePage>previousPage){
+      recordReadingActivity(session,{pagesNarrated:Math.min(20,safePage-previousPage)},`page:${room.id}:${safePage}:${new Date().toISOString().slice(0,10)}`);
+      if(plan.totalPages&&safePage>=plan.totalPages&&previousPage<plan.totalPages)recordReadingActivity(session,{completedBooks:1},`book-complete:${room.books?.id||room.id}`);
+    }
     pageSaveChainRef.current=pageSaveChainRef.current
       .catch(()=>{})
       .then(async()=>{
@@ -185,6 +192,12 @@ function ConnectedLiveRoom({room,setView,session,startWithMic=false}){
   const connectedCount=live.participants.filter(item=>item.connectionState==="connected").length;
   const isConnecting=live.channelState==="connecting";
   const micBusy=live.micState==="requesting";
+
+  useEffect(()=>{
+    if(connectedCount<2||sharedSessionRecordedRef.current)return;
+    sharedSessionRecordedRef.current=true;
+    recordReadingActivity(session,{sharedSessions:1},`together:${room.id}:${new Date().toISOString().slice(0,10)}`);
+  },[connectedCount,room.id,session]);
 
   return <section className="liveRoomView">
     <button className="back" onClick={()=>setView("rooms")}>‹ 읽기방으로</button>
@@ -268,7 +281,7 @@ function ConnectedLiveRoom({room,setView,session,startWithMic=false}){
       {live.micState==="idle"&&"🎧 PAGE LIVE 시작을 누르면 마이크가 켜지고 서로의 목소리를 들을 수 있어요."}
     </div>
 
-    <RecordingStudio roomName={room.name} bookTitle={room.books?.title||"함께 읽는 책"} variant="page"/>
+    <RecordingStudio roomName={room.name} bookTitle={room.books?.title||"함께 읽는 책"} variant="page" session={session}/>
 
     {live.remoteStreams.map(item=><RemoteAudio
       key={item.id}
