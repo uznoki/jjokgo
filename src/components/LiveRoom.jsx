@@ -2,6 +2,7 @@ import {useCallback,useEffect,useRef,useState} from "react";
 import {CheckCircle2,Headphones,Mic,Pencil} from "lucide-react";
 import {supabase} from "../supabase";
 import {RemoteAudio} from "./RemoteAudio";
+import {RecordingStudio} from "./RecordingStudio";
 import {useLiveKitRoom} from "../hooks/useLiveKitRoom";
 import {useLiveRoom} from "../hooks/useLiveRoom";
 
@@ -266,6 +267,8 @@ function ConnectedLiveRoom({room,setView,session,startWithMic=false}){
       {live.micState==="error"&&live.message}
       {live.micState==="idle"&&"🎧 PAGE LIVE 시작을 누르면 마이크가 켜지고 서로의 목소리를 들을 수 있어요."}
     </div>
+
+    <RecordingStudio roomName={room.name} bookTitle={room.books?.title||"함께 읽는 책"} variant="page"/>
 
     {live.remoteStreams.map(item=><RemoteAudio
       key={item.id}
